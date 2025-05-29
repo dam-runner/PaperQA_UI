@@ -1,0 +1,8 @@
+# Virtual environment
+venv/
+.env
+# PDF corpus
+/papers/*.pdf
+# Streamlit cache & logs
+.streamlit/
+__pycache__/
