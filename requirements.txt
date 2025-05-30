@@ -1,0 +1,4 @@
+paper-qa==4.9.0
+python-dotenv==1.1.0
+streamlit==1.45.1
+ratelimit=2.2.1
