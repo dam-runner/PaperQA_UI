@@ -49,20 +49,58 @@ if shutil.which("pqa") is None:
     raise FileNotFoundError("Could not find 'pqa' CLI in PATH. Ensure paper-qa is installed and 'pqa' is available.")
 
 # ————————— Hydration of Metadata —————————
-# Build or load metadata.json for readable citations
+# Load existing metadata or initialize empty map
 data_file = "metadata.json"
 if os.path.exists(data_file):
     with open(data_file, "r") as f:
         metadata_map = json.load(f)
 else:
     metadata_map = {}
-    for fname in os.listdir(PAPERS_PATH):
-        if fname.lower().endswith('.pdf'):
-            metadata_map[fname] = {"title": fname}
-    with open(data_file, "w") as f:
-        json.dump(metadata_map, f, indent=2)
-st.session_state.metadata_map = metadata_map
 
+# One-time Crossref enrichment for each PDF
+import requests
+from time import sleep
+CROSSREF_MAILTO = os.getenv("CROSSREF_MAILTO", "")
+CROSSREF_URL    = "https://api.crossref.org/works"
+
+def fetch_crossref_metadata(query_title: str) -> dict:
+    params = {"query.title": query_title, "rows": 1}
+    if CROSSREF_MAILTO:
+        params["mailto"] = CROSSREF_MAILTO
+    try:
+        resp = requests.get(CROSSREF_URL, params=params, timeout=10)
+        resp.raise_for_status()
+        items = resp.json().get("message", {}).get("items", [])
+        if not items:
+            return {}
+        item = items[0]
+        title = (item.get("title") or [""])[0]
+        authors = [f"{a.get('given','')} {a.get('family','')}".strip()
+                   for a in item.get("author", [])]
+        year = item.get("issued", {}).get("date-parts", [[None]])[0][0]
+        return {"title": title, "authors": authors, "year": year}
+    except Exception:
+        return {}
+
+# Iterate PDFs, enrich missing entries
+for fname in os.listdir(PAPERS_PATH):
+    if not fname.lower().endswith('.pdf'):
+        continue
+    if fname not in metadata_map or metadata_map[fname].get("year") is None:
+        base = os.path.splitext(fname)[0]
+        cr_data = fetch_crossref_metadata(base)
+        if cr_data:
+            metadata_map[fname] = cr_data
+        else:
+            metadata_map[fname] = {"title": base}
+        # polite pause between requests
+        sleep(1)
+
+# Persist updated metadata
+with open(data_file, "w") as f:
+    json.dump(metadata_map, f, indent=2)
+
+st.session_state.metadata_map = metadata_map
 # ——————— CLI-based ask_query with rate-limit and retries ———————
 @sleep_and_retry
 @limits(calls=1, period=1)
@@ -72,7 +110,7 @@ def ask_query(query: str, preset: str = None, custom: dict = None):
     CLI invocation of 'pqa --json ask'. Logs commands, output, and errors for debugging.
     """
     # Build base CLI command
-    cmd = ["pqa", "--json"]
+    cmd = ["pqa", "ask", "--json"]
     if preset and preset != "Custom":
         cmd += ["-s", preset]
     elif custom:
@@ -84,7 +122,7 @@ def ask_query(query: str, preset: str = None, custom: dict = None):
                     yield prefix + k, v
         for key, val in flatten(custom):
             cmd += [f"--{key}", str(val)]
-    cmd += ["ask", query]
+    cmd += [query]
 
     logger.debug(f"Running command: {' '.join(cmd)}")
 
@@ -143,14 +181,10 @@ if "total_cost" not in st.session_state:
 
 # ————————— Sidebar: Presets & Settings —————————
 st.sidebar.header("Retrieval Settings")
-# List built-in presets via CLI
-try:
-    result = subprocess.run(["pqa", "list-settings"], capture_output=True, text=True)
-    presets = result.stdout.split()
-except Exception:
-    presets = ["high_quality", "fast", "wikicrow", "contracrow", "debug"]
-presets.append("Custom")
-selected = st.sidebar.selectbox("Preset Profile", presets)
+
+# Hard-code presets (having trouble grabbing them from CLI)
+PRESETS = ["high_quality", "fast", "wikicrow", "contracrow", "debug", "Custom"]
+selected = st.sidebar.selectbox("Preset Profile", PRESETS)
 
 # Custom settings section
 custom = {}

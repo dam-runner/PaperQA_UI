@@ -1,4 +1,6 @@
-paper-qa==4.9.0
+paper-qa==5.21.0
+pip==25.1.1
 python-dotenv==1.1.0
+ratelimit==2.2.1
+setuptools==58.1.0
 streamlit==1.45.1
-ratelimit=2.2.1
