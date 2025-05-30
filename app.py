@@ -1,12 +1,15 @@
 import os
 import logging
+import json
+import time
+from time import sleep
+
 from dotenv import load_dotenv
 
 import streamlit as st
 import requests
-from time import sleep
 
-from paperqa import Settings, ask, index
+from paperqa import Settings, ask
 from pydantic import BaseModel
 
 # ————————— Configuration —————————
@@ -27,10 +30,15 @@ PRICING = {
 }
 
 # ————————— Logging —————————
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s %(levelname)s %(message)s"
-)
+import logging
+
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s %(levelname)s %(message)s")
+# Silence internals
+logging.getLogger("paperqa").setLevel(logging.INFO)
+logging.getLogger("lite.llm").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+
 logger = logging.getLogger(__name__)
 
 # ————————— Streamlit Setup —————————
@@ -71,18 +79,12 @@ def build_settings():
         }
     }
     common.update(custom)
+
+    settings.verbosity = 1 # Toggling verbosity setting
+
     return Settings(**common)
 
 settings = build_settings()
-
-# ————————— Indexing (cached) —————————
-@st.cache_resource(show_spinner=False)
-def ensure_index(path: str):
-    logger.info("Ensuring PaperQA index exists…")
-    index(paper_directory=path)  # idempotent
-    return True
-
-_ = ensure_index(PAPERS_PATH)
 
 # ————————— Metadata Enrichment (cached) —————————
 @st.cache_data(ttl=24*3600)
@@ -133,25 +135,33 @@ if "total_cost" not in st.session_state:
 query = st.text_input("Ask a question about your PDF library:")
 if st.button("Send") and query:
     with st.spinner("Retrieving answer…"):
-        start = st.time()
+        start = time.time()
         try:
-            resp = ask(query, settings=settings)
+            resp = ask(
+                query,
+                settings=settings,
+                callbacks=[]
+            )
             ans  = resp.formatted_answer
             evs  = resp.context
             usage = resp.usage or {}
         except Exception as e:
             ans, evs, usage = f"Error: {e}", [], {}
-        elapsed = st.time() - start
+        elapsed = time.time() - start
 
     # Cost tracking
     cost = 0.0
-    model = settings.llm_config.get("model_name", "")
-    if usage and model in PRICING:
-        p = usage.get("prompt_tokens",0)
-        c = usage.get("completion_tokens",0)
-        rate = PRICING[model]
-        cost = p*rate["prompt"] + c*rate["completion"]
-        st.session_state.total_cost += cost
+    try:
+        # usage["model"] if present, else fallback to settings.llm
+        model = usage.get("model", settings.llm)
+        if usage and model in PRICING:
+            p = usage.get("prompt_tokens", 0)
+            c = usage.get("completion_tokens", 0)
+            rate = PRICING[model]
+            cost = p * rate["prompt"] + c * rate["completion"]
+            st.session_state.total_cost += cost
+    except Exception as e:
+        logger.warning(f"Cost calc failed: {e}")
 
     st.session_state.history.append((query, ans, evs, elapsed, cost))
 
