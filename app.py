@@ -101,16 +101,17 @@ with open(data_file, "w") as f:
     json.dump(metadata_map, f, indent=2)
 
 st.session_state.metadata_map = metadata_map
+
 # ——————— CLI-based ask_query with rate-limit and retries ———————
 @sleep_and_retry
 @limits(calls=1, period=1)
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=1, min=1, max=10), retry=retry_if_exception_type(Exception))
 def ask_query(query: str, preset: str = None, custom: dict = None):
     """
-    CLI invocation of 'pqa --json ask'. Logs commands, output, and errors for debugging.
+    CLI invocation of 'pqa ask', returning JSON via --prompts.use_json.
     """
-    # Build base CLI command
-    cmd = ["pqa", "ask", "--json"]
+    # Build base CLI command: subcommand first, then flags
+    cmd = ["pqa", "ask", "--prompts.use_json", "true"]
     if preset and preset != "Custom":
         cmd += ["-s", preset]
     elif custom:
@@ -122,6 +123,7 @@ def ask_query(query: str, preset: str = None, custom: dict = None):
                     yield prefix + k, v
         for key, val in flatten(custom):
             cmd += [f"--{key}", str(val)]
+    # Append the user query
     cmd += [query]
 
     logger.debug(f"Running command: {' '.join(cmd)}")
@@ -134,6 +136,7 @@ def ask_query(query: str, preset: str = None, custom: dict = None):
     except FileNotFoundError:
         logger.error("pqa CLI not found when attempting to run ask_query", exc_info=True)
         raise
+
     logger.debug(f"pqa stdout: {proc.stdout}")
     logger.debug(f"pqa stderr: {proc.stderr}")
 
@@ -146,32 +149,6 @@ def ask_query(query: str, preset: str = None, custom: dict = None):
     except json.JSONDecodeError:
         logger.error("Failed to parse JSON from pqa output", exc_info=True)
         raise
-
-    # Build base CLI command with JSON output
-    cmd = ["pqa", "--json"]
-    if preset and preset != "Custom":
-        cmd += ["-s", preset]
-    elif custom:
-        # Flatten custom settings into --key.subkey value
-        def flatten(d, prefix=""):
-            for k, v in d.items():
-                if isinstance(v, dict):
-                    yield from flatten(v, prefix + k + ".")
-                else:
-                    yield prefix + k, v
-        for key, val in flatten(custom):
-            cmd += [f"--{key}", str(val)]
-    cmd += ["ask", query]
-
-    # Ensure API key in subprocess environment
-    env = os.environ.copy()
-    env["OPENAI_API_KEY"] = OPENAI_API_KEY
-
-    # Execute and parse JSON
-    proc = subprocess.run(cmd, capture_output=True, text=True, env=env)
-    if proc.returncode != 0:
-        raise RuntimeError(proc.stderr.strip())
-    return json.loads(proc.stdout)
 
 # ————————— Initialize Session State —————————
 if "history" not in st.session_state:
