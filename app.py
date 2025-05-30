@@ -83,18 +83,19 @@ def fetch_crossref_metadata(query_title: str) -> dict:
         return {}
 
 # Iterate PDFs, enrich missing entries
-for fname in os.listdir(PAPERS_PATH):
-    if not fname.lower().endswith('.pdf'):
-        continue
-    if fname not in metadata_map or metadata_map[fname].get("year") is None:
-        base = os.path.splitext(fname)[0]
-        cr_data = fetch_crossref_metadata(base)
-        if cr_data:
-            metadata_map[fname] = cr_data
-        else:
-            metadata_map[fname] = {"title": base}
-        # polite pause between requests
-        sleep(1)
+with st.spinner("✨ Collecting metadata via Crossref…"):
+    for fname in os.listdir(PAPERS_PATH):
+        if not fname.lower().endswith('.pdf'):
+            continue
+        if fname not in metadata_map or metadata_map[fname].get("year") is None:
+            base = os.path.splitext(fname)[0]
+            cr_data = fetch_crossref_metadata(base)
+            if cr_data:
+                metadata_map[fname] = cr_data
+            else:
+                metadata_map[fname] = {"title": base}
+            # polite pause between requests
+            sleep(1)
 
 # Persist updated metadata
 with open(data_file, "w") as f:
@@ -111,7 +112,7 @@ def ask_query(query: str, preset: str = None, custom: dict = None):
     CLI invocation of 'pqa ask', returning JSON via --prompts.use_json.
     """
     # Build base CLI command: subcommand first, then flags
-    cmd = ["pqa", "ask", "--prompts.use_json", "true"]
+    cmd = ["pqa", "ask", "--prompts.use_json=true"]
     if preset and preset != "Custom":
         cmd += ["-s", preset]
     elif custom:
