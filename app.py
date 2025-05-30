@@ -112,7 +112,7 @@ def ask_query(query: str, preset: str = None, custom: dict = None):
     CLI invocation of 'pqa ask', returning JSON via --prompts.use_json.
     """
     # Build base CLI command: subcommand first, then flags
-    cmd = ["pqa", "ask", "--prompts.use_json=true"]
+    cmd = ["pqa", "ask", "--prompts.use_json true"]
     if preset and preset != "Custom":
         cmd += ["-s", preset]
     elif custom:
