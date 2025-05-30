@@ -1,4 +1,17 @@
 import os
+import logging
+import shutil
+
+# Configure logging to console
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
+logger = logging.getLogger(__name__)
+
+import time
+import json
+import subprocess
+import streamlit as st
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from ratelimit import limits, sleep_and_retry
 import time
 import json
 import subprocess
@@ -7,11 +20,20 @@ from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_excep
 from ratelimit import limits, sleep_and_retry
 
 # ————————— Configuration —————————
+from dotenv import load_dotenv  # load environment variables from .env
+load_dotenv()
+
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "<YOUR_OPENAI_KEY>")
 PAPERS_PATH     = os.getenv("PAPERS_PATH", "papers/")
+# Normalize path separators
+PAPERS_PATH = os.path.abspath(PAPERS_PATH)
 MODEL_NAME      = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
-# Pricing per token based on per-million rates
+# Verify PAPERS_PATH exists
+if not os.path.isdir(PAPERS_PATH):
+    raise FileNotFoundError(f"PAPERS_PATH not found: {PAPERS_PATH}")
+
+# Pricing per token based on per-million rates based on per-million rates
 PRICING = {
     "gpt-4o-mini":  {"prompt": 0.15/1e6, "completion": 0.60/1e6},
     "gpt-4.1-mini": {"prompt": 0.40/1e6, "completion": 1.60/1e6},
@@ -21,6 +43,10 @@ PRICING = {
 # ————————— Streamlit Setup —————————
 st.set_page_config(page_title="PaperQA2 Chat", layout="wide")
 st.title("📖 PaperQA2 Research Chat")
+
+# ————————— Verify CLI Presence —————————
+if shutil.which("pqa") is None:
+    raise FileNotFoundError("Could not find 'pqa' CLI in PATH. Ensure paper-qa is installed and 'pqa' is available.")
 
 # ————————— Hydration of Metadata —————————
 # Build or load metadata.json for readable citations
@@ -42,6 +68,47 @@ st.session_state.metadata_map = metadata_map
 @limits(calls=1, period=1)
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=1, min=1, max=10), retry=retry_if_exception_type(Exception))
 def ask_query(query: str, preset: str = None, custom: dict = None):
+    """
+    CLI invocation of 'pqa --json ask'. Logs commands, output, and errors for debugging.
+    """
+    # Build base CLI command
+    cmd = ["pqa", "--json"]
+    if preset and preset != "Custom":
+        cmd += ["-s", preset]
+    elif custom:
+        def flatten(d, prefix=""):
+            for k, v in d.items():
+                if isinstance(v, dict):
+                    yield from flatten(v, prefix + k + ".")
+                else:
+                    yield prefix + k, v
+        for key, val in flatten(custom):
+            cmd += [f"--{key}", str(val)]
+    cmd += ["ask", query]
+
+    logger.debug(f"Running command: {' '.join(cmd)}")
+
+    env = os.environ.copy()
+    env["OPENAI_API_KEY"] = OPENAI_API_KEY
+
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, env=env)
+    except FileNotFoundError:
+        logger.error("pqa CLI not found when attempting to run ask_query", exc_info=True)
+        raise
+    logger.debug(f"pqa stdout: {proc.stdout}")
+    logger.debug(f"pqa stderr: {proc.stderr}")
+
+    if proc.returncode != 0:
+        logger.error(f"pqa command failed with return code {proc.returncode}")
+        raise RuntimeError(proc.stderr.strip())
+
+    try:
+        return json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        logger.error("Failed to parse JSON from pqa output", exc_info=True)
+        raise
+
     # Build base CLI command with JSON output
     cmd = ["pqa", "--json"]
     if preset and preset != "Custom":
@@ -168,3 +235,4 @@ for q, a, evs, el, cst in st.session_state.history:
 st.sidebar.markdown("---")
 st.sidebar.header("Session Metrics")
 st.sidebar.markdown(f"**Total Cost:** ${st.session_state.total_cost:.4f}")
+
