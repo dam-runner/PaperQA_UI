@@ -137,47 +137,52 @@ if st.button("Send") and query:
     with st.spinner("Retrieving answer…"):
         start = time.time()
         try:
-            resp = ask(
-                query,
-                settings=settings,
-                callbacks=[]
-            )
-            ans  = resp.formatted_answer
-            evs  = resp.context
-            usage = resp.usage or {}
+            resp = ask(query, settings=settings)
+            sess = resp.session  # type: PQASession
+
+            # 1) Extract the answer text
+            if sess.formatted_answer:
+                ans = sess.formatted_answer
+            else:
+                ans = sess.answer or "No answer returned."
+
+            # 2) Extract evidence snippets (contexts is a list[Context])
+            evs = sess.contexts or []
+
+            # 3) Extract cost directly from session
+            #    (instead of computing from usage)
+            cost = sess.cost
+
         except Exception as e:
-            ans, evs, usage = f"Error: {e}", [], {}
+            ans, evs, cost = f"Error: {e}", [], 0.0
+
         elapsed = time.time() - start
 
-    # Cost tracking
-    cost = 0.0
-    try:
-        # usage["model"] if present, else fallback to settings.llm
-        model = usage.get("model", settings.llm)
-        if usage and model in PRICING:
-            p = usage.get("prompt_tokens", 0)
-            c = usage.get("completion_tokens", 0)
-            rate = PRICING[model]
-            cost = p * rate["prompt"] + c * rate["completion"]
-            st.session_state.total_cost += cost
-    except Exception as e:
-        logger.warning(f"Cost calc failed: {e}")
-
+    # 4) Save to history
     st.session_state.history.append((query, ans, evs, elapsed, cost))
 
-# ————————— Display History —————————
-for q,a,evs,el,cst in st.session_state.history:
+# — Display chat history —
+for q, a, ctx_list, el, cst in st.session_state.history:
     st.markdown(f"**You:** {q}")
-    st.markdown(f"**Answer** ({el:.2f}s, Cost: ${cst:.4f}):  {a}")
-    for ev in evs:
-        text = ev.text
-        pid  = ev.paper_id
-        pg   = ev.page
-        meta = metadata_map.get(pid,{})
-        cite = f"{meta.get('title',pid)} — {', '.join(meta.get('authors',[]))}"
-        if pg: cite += f" (p. {pg})"
-        link = os.path.join(PAPERS_PATH, pid)
-        st.markdown(f"> {text}\n> [📄 {cite}]({link})")
+    st.markdown(f"**Answer ({el:.2f}s, Cost: ${cst:.4f}):**  {a}")
+
+    # Show each snippet
+    for c in ctx_list:
+        snippet_text = c.text.text             # the actual snippet
+        paper_doc    = c.text.doc              # a Doc object
+        title        = paper_doc.title
+        authors      = ", ".join(paper_doc.authors)
+        citation_str = paper_doc.citation      # formatted bib entry
+        page_num     = getattr(c, "page", None)
+        link         = os.path.join(PAPERS_PATH, paper_doc.name)
+
+        # Build a display name (must fall back gracefully)
+        cite_display = f"{title} — {authors}" if authors else title
+        if page_num is not None:
+            cite_display += f" (p. {page_num})"
+
+        st.markdown(f"> {snippet_text}\n> [📄 {cite_display}]({link})")
+
 
 # ————————— Sidebar: Metrics —————————
 st.sidebar.markdown("---")
