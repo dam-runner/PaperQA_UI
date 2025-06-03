@@ -1,0 +1,1078 @@
+{
+  "Adebara et al. - 2023 - SERENGETI Massively Multilingual Language Models .pdf": {
+    "title": "SERENGETI: Massively Multilingual Language Models for Africa",
+    "authors": [
+      "Ife Adebara",
+      "AbdelRahim Elmadany",
+      "Muhammad Abdul-Mageed",
+      "Alcides Alcoba Inciarte"
+    ],
+    "year": 2023
+  },
+  "Amalika et al. - 2023 - Multilingual children's language use The case of .pdf": {
+    "title": "Multilingual language competence and use",
+    "authors": [],
+    "year": 2015
+  },
+  "Anh et al. - 2020 - Automatic Multilingual Speech Recognition.pdf": {
+    "title": "Analyzing Multilingual Automatic Speech Recognition Systems Performance",
+    "authors": [
+      "Yetunde E. Adegbegha",
+      "Aarav Minocha",
+      "Renu Balyan"
+    ],
+    "year": 2023
+  },
+  "Attia et al. - 2024 - Kid-Whisper Towards Bridging the Performance Gap in Automatic Speech Recognition for Children VS. A.pdf": {
+    "title": "Kid-Whisper: Towards Bridging the Performance Gap in Automatic Speech Recognition for Children VS. Adults",
+    "authors": [
+      "Ahmed Adel Attia",
+      "Jing Liu",
+      "Wei Ai",
+      "Dorottya Demszky",
+      "Carol Espy-Wilson"
+    ],
+    "year": 2024
+  },
+  "Babu et al. - 2021 - XLS-R Self-supervised Cross-lingual Speech Repres.pdf": {
+    "title": "XLS-R: Self-supervised Cross-lingual Speech Representation Learning at Scale",
+    "authors": [
+      "Arun Babu",
+      "Changhan Wang",
+      "Andros Tjandra",
+      "Kushal Lakhotia",
+      "Qiantong Xu",
+      "Naman Goyal",
+      "Kritika Singh",
+      "Patrick von Platen",
+      "Yatharth Saraf",
+      "Juan Pino",
+      "Alexei Baevski",
+      "Alexis Conneau",
+      "Michael Auli"
+    ],
+    "year": 2022
+  },
+  "Barcovschi et al. - 2023 - A comparative analysis between Conformer-Transduce.pdf": {
+    "title": "Response to Mottron et al. (2023) and Woods et al. (2023)",
+    "authors": [
+      "Einat Waizbard\u2010Bartov",
+      "Deborah Fein",
+      "Catherine Lord",
+      "David G. Amaral"
+    ],
+    "year": 2023
+  },
+  "Barnard et al. - 2009 - ASR corpus design for resource-scarce languages.pdf": {
+    "title": "ASR corpus design for resource-scarce languages",
+    "authors": [
+      "Etienne Barnard",
+      "Marelie Davel",
+      "Charl van Heerden"
+    ],
+    "year": 2009
+  },
+  "Batliner et al. - 2005 - The PF_STAR children's speech corpus.pdf": {
+    "title": "Exemplar Abstract for Citrifermentans bemidjiense (Nevin et al. 2005) Waite et al. 2020, Geomonas bemidjiensis (Nevin et al. 2005) Xu et al. 2020 and Geobacter bemidjiensis Nevin et al. 2005.",
+    "authors": [
+      "Charles Thomas Parker",
+      "Sarah Wigley",
+      "George M Garrity"
+    ],
+    "year": 2008
+  },
+  "Begum Mustafa et al. - 2022 - Code-Switching in Automatic Speech Recognition Th.pdf": {
+    "title": "Code-switching automatic speech recognition using modified ESPNet",
+    "authors": [
+      "Swarnabha Sinha",
+      "V. Spoorthy",
+      "Shashidhar G. Koolagudi"
+    ],
+    "year": 2023
+  },
+  "Bhardwaj et al. - 2020 - Development of robust automatic speech recognition.pdf": {
+    "title": "Robust Automatic Speech Recognition",
+    "authors": [],
+    "year": 2016
+  },
+  "Booth et al. - 2020 - Evaluating and improving child-directed automatic .pdf": {
+    "title": "In Regard to Booth et al",
+    "authors": [
+      "Dimitri Alex Dimitroyannis"
+    ],
+    "year": 2025
+  },
+  "Butler - 2012 - BilingualismMultilingualism and Second\u2010Language A.pdf": {
+    "title": "Dr R. M. Butler (1929\u20132012)",
+    "authors": [],
+    "year": 2012
+  },
+  "Chan et al. - 2021 - SpeechStew Simply Mix All Available Speech Recogn.pdf": {
+    "title": "Similarities and differences: Comment on Chan et al. (2021).",
+    "authors": [
+      "Peter M. Jones",
+      "Chris J. Mitchell",
+      "Andy J. Wills",
+      "Stuart G. Spicer"
+    ],
+    "year": 2021
+  },
+  "Chen et al. - 2020 - Data Augmentation For Children's Speech Recognition -- The Ethiopian System For The SLT 2021 Child.pdf": {
+    "title": "The SLT 2021 Children Speech Recognition Challenge: Open Datasets, Rules and Baselines",
+    "authors": [
+      "Fan Yu",
+      "Zhuoyuan Yao",
+      "Xiong Wang",
+      "Keyu An",
+      "Lei Xie",
+      "Zhijian Ou",
+      "Bo Liu",
+      "Xiulin Li",
+      "Guanqiong Miao"
+    ],
+    "year": 2021
+  },
+  "Chen et al. - 2021 - GigaSpeech An Evolving, Multi-domain ASR Corpus w.pdf": {
+    "title": "GigaSpeech: An Evolving, Multi-Domain ASR Corpus with 10,000 Hours of Transcribed Audio",
+    "authors": [
+      "Guoguo Chen",
+      "Shuzhou Chai",
+      "Guan-Bo Wang",
+      "Jiayu Du",
+      "Wei-Qiang Zhang",
+      "Chao Weng",
+      "Dan Su",
+      "Daniel Povey",
+      "Jan Trmal",
+      "Junbo Zhang",
+      "Mingjie Jin",
+      "Sanjeev Khudanpur",
+      "Shinji Watanabe",
+      "Shuaijiang Zhao",
+      "Wei Zou",
+      "Xiangang Li",
+      "Xuchen Yao",
+      "Yongqing Wang",
+      "Zhao You",
+      "Zhiyong Yan"
+    ],
+    "year": 2021
+  },
+  "Chung - Self-Supervised Learning for Speech Processing.pdf": {
+    "title": "Self-supervised Representation Learning for Speech Processing",
+    "authors": [
+      "Hung-yi Lee",
+      "Abdelrahman Mohamed",
+      "Shinji Watanabe",
+      "Tara Sainath",
+      "Karen Livescu",
+      "Shang-Wen Li",
+      "Shu-wen Yang",
+      "Katrin Kirchhoff"
+    ],
+    "year": 2022
+  },
+  "Conneau et al. - 2021 - Unsupervised Cross-Lingual Representation Learning.pdf": {
+    "title": "Unsupervised Cross-Lingual Representation Learning",
+    "authors": [
+      "Sebastian Ruder",
+      "Anders S\u00f8gaard",
+      "Ivan Vuli\u0107"
+    ],
+    "year": 2019
+  },
+  "Cowan et al. - 2022 - Masked-Speech Recognition for Linguistically Diver.pdf": {
+    "title": "Linguistically informed automatic speech recognition",
+    "authors": [
+      "Carol Y. Espy-Wilson"
+    ],
+    "year": 2002
+  },
+  "Cristia et al. - 2021 - A thorough evaluation of the Language Environment .pdf": {
+    "title": "Collecting language acquisition data from understudied urban communities: A reply to Cristia et al.",
+    "authors": [
+      "Rowena GARCIA",
+      "Hannah Maria D. ALBERT",
+      "Ivan Paul BONDOC",
+      "Jocelyn Christina B. MARZAN"
+    ],
+    "year": 2023
+  },
+  "Cumbal et al. - 2021 - \u201cYou don\u2019t understand me!\u201d Comparing ASR results .pdf": {
+    "title": "\u201cYou Don\u2019t Understand Me\u201d",
+    "authors": [
+      "Janice McRandal"
+    ],
+    "year": 2023
+  },
+  "Datta et al. - 2020 - Language-agnostic multilingual modeling.pdf": {
+    "title": "Language-Agnostic Multilingual Modeling",
+    "authors": [
+      "Arindrima Datta",
+      "Bhuvana Ramabhadran",
+      "Jesse Emond",
+      "Anjuli Kannan",
+      "Brian Roark"
+    ],
+    "year": 2020
+  },
+  "Diwan et al. - 2021 - Multilingual and code-switching ASR challenges for.pdf": {
+    "title": "MUCS 2021: Multilingual and Code-Switching ASR Challenges for Low Resource Indian Languages",
+    "authors": [
+      "Anuj Diwan",
+      "Rakesh Vaideeswaran",
+      "Sanket Shah",
+      "Ankita Singh",
+      "Srinivasa Raghavan",
+      "Shreya Khare",
+      "Vinit Unni",
+      "Saurabh Vyas",
+      "Akash Rajpuria",
+      "Chiranjeevi Yarra",
+      "Ashish Mittal",
+      "Prasanta Kumar Ghosh",
+      "Preethi Jyothi",
+      "Kalika Bali",
+      "Vivek Seshadri",
+      "Sunayana Sitaram",
+      "Samarth Bharadwaj",
+      "Jai Nanavati",
+      "Raoul Nanavati",
+      "Karthik Sankaranarayanan"
+    ],
+    "year": 2021
+  },
+  "Duarte - 2014 - Language development in mono- and multilingual children A longitudinal approach.pdf": {
+    "title": "Language development in mono- and multilingual children: A longitudinal approach",
+    "authors": [
+      "Marina Trebbels",
+      "Joana Duarte"
+    ],
+    "year": 2014
+  },
+  "Ehlert et al. - COLLECTING AND ANNOTATING NATURAL CHILD SPEECH DAT.pdf": {
+    "title": "Methods for eliciting, annotating, and analyzing databases for child speech development",
+    "authors": [
+      "Mary E. Beckman",
+      "Andrew R. Plummer",
+      "Benjamin Munson",
+      "Patrick F. Reidy"
+    ],
+    "year": 2017
+  },
+  "Fan et al. - 2024 - Benchmarking Children's ASR with Supervised and Se.pdf": {
+    "title": "Benchmarking Children's ASR with Supervised and Self-supervised Speech Foundation Models",
+    "authors": [
+      "Ruchao Fan",
+      "Natarajan Balaji Shankar",
+      "Abeer Alwan"
+    ],
+    "year": 2024
+  },
+  "Feng et al. - 2023 - Towards inclusive automatic speech recognition.pdf": {
+    "title": "Towards inclusive automatic speech recognition",
+    "authors": [
+      "Siyuan Feng",
+      "Bence Mark Halpern",
+      "Olya Kudina",
+      "Odette Scharenborg"
+    ],
+    "year": 2024
+  },
+  "Feng et al. - 2024 - Towards inclusive automatic speech recognition.pdf": {
+    "title": "Towards inclusive automatic speech recognition",
+    "authors": [
+      "Siyuan Feng",
+      "Bence Mark Halpern",
+      "Olya Kudina",
+      "Odette Scharenborg"
+    ],
+    "year": 2024
+  },
+  "Ferraz et al. - 2024 - Multilingual DistilWhisper Efficient Distillation of Multi-task Speech Models via Language-Specific.pdf": {
+    "title": "Multilingual Distilwhisper: Efficient Distillation of Multi-Task Speech Models Via Language-Specific Experts",
+    "authors": [
+      "Thomas Palmeira Ferraz",
+      "Marcely Zanon Boito",
+      "Caroline Brun",
+      "Vassilina Nikoulina"
+    ],
+    "year": 2024
+  },
+  "Gale et al. - 2019 - Improving ASR Systems for Children with Autism and.pdf": {
+    "title": "Improving ASR Systems for Children with Autism and Language Impairment Using Domain-Focused DNN Transfer Techniques",
+    "authors": [
+      "Robert Gale",
+      "Liu Chen",
+      "Jill Dolata",
+      "Jan van Santen",
+      "Meysam Asgari"
+    ],
+    "year": 2019
+  },
+  "Genesee - 2005 - BILINGUAL FIRST LANGAUGE ACQUISITION.pdf": {
+    "title": "Bilingual First Language Acquisition",
+    "authors": [
+      "Fred Genesee",
+      "Elena Nicoladis"
+    ],
+    "year": null
+  },
+  "Gerosa et al. - 2009 - A review of ASR technologies for children's speech.pdf": {
+    "title": "A review of ASR technologies for children's speech",
+    "authors": [
+      "Matteo Gerosa",
+      "Diego Giuliani",
+      "Shrikanth Narayanan",
+      "Alexandros Potamianos"
+    ],
+    "year": 2009
+  },
+  "Gerosa et al. - 2009 - Towards age-independent acoustic modeling.pdf": {
+    "title": "Towards age-independent acoustic modeling",
+    "authors": [
+      "Matteo Gerosa",
+      "Diego Giuliani",
+      "Fabio Brugnara"
+    ],
+    "year": 2009
+  },
+  "Ghimire et al. - 2024 - Improving on the Limitations of the ASR Model in Low-Resourced Environments Using Parameter-Efficien.pdf": {
+    "title": "Improving HMM/DNN in ASR of under-resourced languages using probabilistic sampling",
+    "authors": [
+      "Meixu Song",
+      "Qingqing Zhang",
+      "Jielin Pan",
+      "Yonghong Yan"
+    ],
+    "year": 2015
+  },
+  "Gilkerson et al. - 2017 - Mapping the Early Language Environment Using All-D.pdf": {
+    "title": "Mapping the Early Language Environment Using All-Day Recordings and Automated Analysis",
+    "authors": [
+      "Jill Gilkerson",
+      "Jeffrey A. Richards",
+      "Steven F. Warren",
+      "Judith K. Montgomery",
+      "Charles R. Greenwood",
+      "D. Kimbrough Oller",
+      "John H. L. Hansen",
+      "Terrance D. Paul"
+    ],
+    "year": 2017
+  },
+  "Graave et al. - 2024 - Mixed ChildrenAdultChildrenized Fine-Tuning for Children\u2019s ASR How to Reduce Age Mismatch and Spe.pdf": {
+    "title": "Mixed Children/Adult/Childrenized Fine-Tuning for Children\u2019s ASR: How to Reduce Age Mismatch and Speaking Style Mismatch",
+    "authors": [
+      "Thomas Graave",
+      "Zhengyang Li",
+      "Timo Lohrenz",
+      "Tim Fingscheidt"
+    ],
+    "year": 2024
+  },
+  "Gretter et al. - 2020 - Overview of the interspeech tlt2020 shared task on.pdf": {
+    "title": "Overview of the Interspeech TLT2020 Shared Task on ASR for Non-Native Children\u2019s Speech",
+    "authors": [
+      "Roberto Gretter",
+      "Marco Matassoni",
+      "Daniele Falavigna",
+      "Keelan Evanini",
+      "Chee Wee Leong"
+    ],
+    "year": 2020
+  },
+  "Gretter et al. - 2021 - Etlt 2021 Shared task on automatic speech recogni.pdf": {
+    "title": "ETLT 2021: Shared Task on Automatic Speech Recognition for Non-Native Children&amp;#8217;s Speech",
+    "authors": [
+      "R. Gretter",
+      "Marco Matassoni",
+      "D. Falavigna",
+      "A. Misra",
+      "C.W. Leong",
+      "K. Knill",
+      "L. Wang"
+    ],
+    "year": 2021
+  },
+  "Gurunath Shivakumar and Georgiou - 2020 - Transfer learning from adult to children for speec.pdf": {
+    "title": "Adult hepatoblastoma: Learning from children",
+    "authors": [
+      "Anne-Laure Rougemont",
+      "Val\u00e9rie A. McLin",
+      "Christian Toso",
+      "Barbara E. Wildhaber"
+    ],
+    "year": 2012
+  },
+  "Gurunath Shivakumar and Narayanan - 2022 - End-to-end neural systems for automatic children s.pdf": {
+    "title": "End-to-end neural systems for automatic children speech recognition: An empirical study",
+    "authors": [
+      "Prashanth Gurunath Shivakumar",
+      "Shrikanth Narayanan"
+    ],
+    "year": 2022
+  },
+  "Hidayatullah et al. - 2006 - A Systematic Review on Language Identification of Code-Mixed Text Techniques, Data Availabili.pdf": {
+    "title": "A Systematic Review on Language Identification of Code-Mixed Text: Techniques, Data Availability, Challenges, and Framework Development",
+    "authors": [
+      "Ahmad Fathan Hidayatullah",
+      "Atika Qazi",
+      "Daphne Teck Ching Lai",
+      "Rosyzie Anna Apong"
+    ],
+    "year": 2022
+  },
+  "Hua and Wei - Bi- and Multilingual Language Acquisition.pdf": {
+    "title": "Bi\u2010 and Multilingual Language Acquisition",
+    "authors": [
+      "Zhu Hua",
+      "Li Wei"
+    ],
+    "year": 2005
+  },
+  "Huang et al. - 2020 - Cross-Language Transfer Learning, Continuous Learning, and Domain Adaptation for End-to-End Automati.pdf": {
+    "title": "Cross-Language Transfer Learning and Domain Adaptation for End-to-End Automatic Speech Recognition",
+    "authors": [
+      "Jian Luo",
+      "Jianzong Wang",
+      "Ning Cheng",
+      "Edward Xiao",
+      "Jing Xiao",
+      "Georg Kucsko",
+      "Patrick O'Neill",
+      "Jagadeesh Balam",
+      "Slyne Deng",
+      "Adriana Flores",
+      "Boris Ginsburg",
+      "Jocelyn Huang",
+      "Oleksii Kuchaiev",
+      "Vitaly Lavrukhin",
+      "Jason Li"
+    ],
+    "year": 2021
+  },
+  "Jain et al. - 2023 - A WAV2VEC2-Based Experimental Study on Self-Superv.pdf": {
+    "title": "Reply to Jain et al",
+    "authors": [
+      "Farnaz Foolad",
+      "Roy F Chemaly"
+    ],
+    "year": 2019
+  },
+  "Jain et al. - 2023 - Adaptation of Whisper models to child speech recognition.pdf": {
+    "title": "Adaptation of Whisper models to child speech recognition",
+    "authors": [
+      "Rishabh Jain",
+      "Andrei Barcovschi",
+      "Mariam Yiwere",
+      "Peter Corcoran",
+      "Horia Cucu"
+    ],
+    "year": 2023
+  },
+  "Jain et al. - 2024 - Exploring Native and Non-Native English Child Spee.pdf": {
+    "title": "Exploring Native and Non-Native English Child Speech Recognition With Whisper",
+    "authors": [
+      "Rishabh Jain",
+      "Andrei Barcovschi",
+      "Mariam Yahayah Yiwere",
+      "Peter Corcoran",
+      "Horia Cucu"
+    ],
+    "year": 2024
+  },
+  "Johnson et al. - 2022 - LPC Augment An LPC-Based ASR Data Augmentation Al.pdf": {
+    "title": "LPC Augment: an LPC-based ASR Data Augmentation Algorithm for Low and Zero-Resource Children\u2019s Dialects",
+    "authors": [
+      "Alexander Johnson",
+      "Ruchao Fan",
+      "Robin Morris",
+      "Abeer Alwan"
+    ],
+    "year": 2022
+  },
+  "Kawakami et al. - 2020 - Learning Robust and Multilingual Speech Representa.pdf": {
+    "title": "Learning Robust and Multilingual Speech Representations",
+    "authors": [
+      "Kazuya Kawakami",
+      "Luyu Wang",
+      "Chris Dyer",
+      "Phil Blunsom",
+      "Aaron van den Oord"
+    ],
+    "year": 2020
+  },
+  "Kraleva - 2011 - Design and development a children\u2019s speech databas.pdf": {
+    "title": "Reasons for Differences in Children\u2019s Speech Development",
+    "authors": [
+      "G. R. Dobrova"
+    ],
+    "year": 2019
+  },
+  "Kuhn et al. - 2024 - Measuring the Accuracy of Automatic Speech Recogni.pdf": {
+    "title": "Measuring the Accuracy of Automatic Speech Recognition Solutions",
+    "authors": [
+      "Korbinian Kuhn",
+      "Verena Kersken",
+      "Benedikt Reuter",
+      "Niklas Egger",
+      "Gottfried Zimmermann"
+    ],
+    "year": 2023
+  },
+  "Kwon and Chung - 2023 - MoLE  Mixture Of Language Experts For Multi-Lingu.pdf": {
+    "title": "MoLE : Mixture Of Language Experts For Multi-Lingual Automatic Speech Recognition",
+    "authors": [
+      "Yoohwan Kwon",
+      "Soo-Whan Chung"
+    ],
+    "year": 2023
+  },
+  "Lee et al. - 1997 - Analysis of children's speech duration, pitch and formants.pdf": {
+    "title": "Analysis of children's speech: duration, pitch and formants",
+    "authors": [
+      "Sungbok Lee",
+      "Alexandros Potamianos",
+      "Shrikanth Narayanan"
+    ],
+    "year": 1997
+  },
+  "Lee et al. - Acoustics of children\u2019s speech Developmental changes of temporal and spectral parametersa).pdf": {
+    "title": "Acoustics of children\u2019s speech: Developmental changes of temporal and spectral parameters",
+    "authors": [
+      "Sungbok Lee",
+      "Alexandros Potamianos",
+      "Shrikanth Narayanan"
+    ],
+    "year": 1999
+  },
+  "Li et al. - 2021 - Multilingual phonetic dataset for low resource spe.pdf": {
+    "title": "Multilingual Phonetic Dataset for Low Resource Speech Recognition",
+    "authors": [
+      "Xinjian Li",
+      "David R. Mortensen",
+      "Florian Metze",
+      "Alan W Black"
+    ],
+    "year": 2021
+  },
+  "Li et al. - 2021 - Scaling End-to-End Models for Large-Scale Multilin.pdf": {
+    "title": "Scaling End-to-End Models for Large-Scale Multilingual ASR",
+    "authors": [
+      "Bo Li",
+      "Ruoming Pang",
+      "Tara N. Sainath",
+      "Anmol Gulati",
+      "Yu Zhang",
+      "James Qin",
+      "Parisa Haghani",
+      "W. Ronny Huang",
+      "Min Ma",
+      "Junwen Bai"
+    ],
+    "year": 2021
+  },
+  "Li et al. - 2022 - TALCS An open-source Mandarin-English code-switch.pdf": {
+    "title": "TALCS: An open-source Mandarin-English code-switching corpus and a speech recognition baseline",
+    "authors": [
+      "Chengfei Li",
+      "Shuhao Deng",
+      "Yaoping Wang",
+      "Guangjing Wang",
+      "Yaguang Gong",
+      "Changbin Chen",
+      "Jinfeng Bai"
+    ],
+    "year": 2022
+  },
+  "Li et al. - 2024 - Improving Whisper's Recognition Performance for Under-Represented Language Kazakh Leveraging Unpaire.pdf": {
+    "title": "Improving Whisper's Recognition Performance for Under-Represented Language Kazakh Leveraging Unpaired Speech and Text",
+    "authors": [
+      "Jinpeng Li",
+      "Yu Pu",
+      "Qi Sun",
+      "Wei-Qiang Zhang"
+    ],
+    "year": 2024
+  },
+  "Lin et al. - 2022 - Few-shot Learning with Multilingual Language Model.pdf": {
+    "title": "Few-shot Learning with Multilingual Generative Language Models",
+    "authors": [
+      "Xi Victoria Lin",
+      "Todor Mihaylov",
+      "Mikel Artetxe",
+      "Tianlu Wang",
+      "Shuohui Chen",
+      "Daniel Simig",
+      "Myle Ott",
+      "Naman Goyal",
+      "Shruti Bhosale",
+      "Jingfei Du",
+      "Ramakanth Pasunuru",
+      "Sam Shleifer",
+      "Punit Singh Koura",
+      "Vishrav Chaudhary",
+      "Brian O\u2019Horo",
+      "Jeff Wang",
+      "Luke Zettlemoyer",
+      "Zornitsa Kozareva",
+      "Mona Diab",
+      "Veselin Stoyanov",
+      "Xian Li"
+    ],
+    "year": 2022
+  },
+  "Liu and Xiong - 2024 - FASA a Flexible and Automatic Speech Aligner for .pdf": {
+    "title": "Reply to Liu and Xiong",
+    "authors": [
+      "Heng He",
+      "Rong Zhong"
+    ],
+    "year": 2023
+  },
+  "Liu et al. - 2024 - Exploration of Whisper fine-tuning strategies for low-resource ASR.pdf": {
+    "title": "Exploration of Whisper fine-tuning strategies for low-resource ASR",
+    "authors": [
+      "Yunpeng Liu",
+      "Xukui Yang",
+      "Dan Qu"
+    ],
+    "year": 2024
+  },
+  "Lu et al. - 2022 - Improving Children's Speech Recognition by Fine-tuning Self-supervised Adult Speech Representations.pdf": {
+    "title": "Evaluating Self-Supervised Speech Representations for Speech Emotion Recognition",
+    "authors": [
+      "Bagus Tris Atmaja",
+      "Akira Sasou"
+    ],
+    "year": 2022
+  },
+  "L\u00fcdtke et al. - 2023 - Multidisciplinary Perspectives on Automatic Analys.pdf": {
+    "title": "Response to Mottron et al. (2023) and Woods et al. (2023)",
+    "authors": [
+      "Einat Waizbard\u2010Bartov",
+      "Deborah Fein",
+      "Catherine Lord",
+      "David G. Amaral"
+    ],
+    "year": 2023
+  },
+  "MacWhinney and Snow - 1985 - The child language data exchange system.pdf": {
+    "title": "Child Language Data Exchange System",
+    "authors": [],
+    "year": 2014
+  },
+  "Madhumani et al. - 2020 - Learning not to Discriminate Task Agnostic Learni.pdf": {
+    "title": "Hierarchically structured task-agnostic continual learning",
+    "authors": [
+      "Heinke Hihn",
+      "Daniel A. Braun"
+    ],
+    "year": 2022
+  },
+  "McCabe et al. - 2013 - Multilingual Children Beyond Myths and Toward Bes.pdf": {
+    "title": "Multilingual Children: Beyond Myths and Toward Best Practices",
+    "authors": [],
+    "year": 2016
+  },
+  "Mohamed et al. - 2022 - Self-Supervised Speech Representation Learning A .pdf": {
+    "title": "CoBERT: Self-Supervised Speech Representation Learning Through Code Representation Learning",
+    "authors": [
+      "Chutong Meng",
+      "Junyi Ao",
+      "Tom Ko",
+      "Mingxuan Wang",
+      "Haizhou Li"
+    ],
+    "year": 2023
+  },
+  "Neufeld - 1999 - Book Reviews Statistical Methods for Speech Recog.pdf": {
+    "title": "Book Reviews: Statistical Methods in Biology.",
+    "authors": [
+      "S. V. Cunliffe"
+    ],
+    "year": 1960
+  },
+  "Nguyen et al. - 2023 - Like a bilingual baby The advantage of visually g.pdf": {
+    "title": "Nguyen et al. Respond",
+    "authors": [
+      "Binh T. Nguyen",
+      "Kerem Shuval",
+      "Amy L. Yaroch"
+    ],
+    "year": 2015
+  },
+  "Park et al. - 2019 - SpecAugment A Simple Data Augmentation Method for.pdf": {
+    "title": "SpecAugment: A Simple Data Augmentation Method for Automatic Speech Recognition",
+    "authors": [
+      "Daniel S. Park",
+      "William Chan",
+      "Yu Zhang",
+      "Chung-Cheng Chiu",
+      "Barret Zoph",
+      "Ekin D. Cubuk",
+      "Quoc V. Le"
+    ],
+    "year": 2019
+  },
+  "Patel and Scharenborg - 2024 - Improving End-to-End Models for Children\u2019s Speech Recognition.pdf": {
+    "title": "Improving End-to-End Models for Children\u2019s Speech Recognition",
+    "authors": [
+      "Tanvina Patel",
+      "Odette Scharenborg"
+    ],
+    "year": 2024
+  },
+  "Pires et al. - 2019 - How Multilingual is Multilingual BERT.pdf": {
+    "title": "How Multilingual is Multilingual BERT?",
+    "authors": [
+      "Telmo Pires",
+      "Eva Schlinger",
+      "Dan Garrette"
+    ],
+    "year": 2019
+  },
+  "Poeste et al. - 2019 - Code-mixing and language dominance bilingual, tri.pdf": {
+    "title": "Code-mixing and language dominance: bilingual, trilingual and multilingual children compared",
+    "authors": [
+      "Meike Poeste",
+      "Natascha M\u00fcller",
+      "Laia Arnaus Gil"
+    ],
+    "year": 2019
+  },
+  "Potamianos and Narayanan - 2003 - Robust recognition of children's speech.pdf": {
+    "title": "2003 K.R. Narayanan Oration",
+    "authors": [
+      "Pranab K. Bardhan"
+    ],
+    "year": 2021
+  },
+  "Potamianos et al. - 1997 - Automatic speech recognition for children.pdf": {
+    "title": "Automatic speech recognition for children",
+    "authors": [
+      "Alexandros Potamianos",
+      "Shrikanth Narayanan",
+      "Sungbok Lee"
+    ],
+    "year": 1997
+  },
+  "Prasad et al. - 2019 - Building Large-Vocabulary ASR Systems for Language.pdf": {
+    "title": "Building Large-Vocabulary ASR Systems for Languages Without Any Audio Training Data",
+    "authors": [
+      "Manasa Prasad",
+      "Daan van Esch",
+      "Sandy Ritchie",
+      "Jonas Fromseier Mortensen"
+    ],
+    "year": 2019
+  },
+  "Radford et al. - 2023 - Robust Speech Recognition via Large-Scale Weak Sup.pdf": {
+    "title": "Time-frequency masking for large scale robust speech recognition",
+    "authors": [
+      "Yuxuan Wang",
+      "Ananya Misra",
+      "Kean K. Chin"
+    ],
+    "year": 2015
+  },
+  "Ramteke et al. - 2019 - NITK Kids\u2019 Speech Corpus.pdf": {
+    "title": "NITK Kids\u2019 Speech Corpus",
+    "authors": [
+      "Pravin Bhaskar Ramteke",
+      "Sujata Supanekar",
+      "Pradyoth Hegde",
+      "Hanna Nelson",
+      "Venkataraja Aithal",
+      "Shashidhar G. Koolagudi"
+    ],
+    "year": 2019
+  },
+  "Ravishankar - 2023 - Understanding Multilingual Language Models Traini.pdf": {
+    "title": "Large Language Models and Multilingual Language Models",
+    "authors": [
+      "Joss Moorkens",
+      "Andy Way",
+      "S\u00e9amus Lankford"
+    ],
+    "year": 2024
+  },
+  "Rolland et al. - Multilingual Transfer Learning for Children Automa.pdf": {
+    "title": "Reply to MF Rolland-Cachera et al",
+    "authors": [
+      "Shelley M Vanderhout",
+      "Catherine S Birken",
+      "Jonathon L Maguire"
+    ],
+    "year": 2017
+  },
+  "Rose and Hedlund - 2021 - The Phonbank Database within Talkbank, and a Pract.pdf": {
+    "title": "The Phonbank Database within Talkbank, and a Practical Overview of the Phon Program",
+    "authors": [
+      "Yvan Rose",
+      "Gregory J. Hedlund"
+    ],
+    "year": 2021
+  },
+  "Sailor et al. - 2018 - Advances in Low Resource ASR A Deep Learning Pers.pdf": {
+    "title": "Advances in Low Resource ASR: A Deep Learning Perspective",
+    "authors": [
+      "Hardik Sailor",
+      "Ankur Patil",
+      "Hemant Patil"
+    ],
+    "year": 2018
+  },
+  "Sanchez et al. - 2018 - childes-db a flexible and reproducible interface .pdf": {
+    "title": "childes-db: A flexible and reproducible interface to the child language data exchange system",
+    "authors": [
+      "Alessandro Sanchez",
+      "Stephan C. Meylan",
+      "Mika Braginsky",
+      "Kyle E. MacDonald",
+      "Daniel Yurovsky",
+      "Michael C. Frank"
+    ],
+    "year": 2019
+  },
+  "Serizel and Giuliani - 2017 - Deep-neural network approaches for speech recognit.pdf": {
+    "title": "Deep neural network approaches in hate speech detection",
+    "authors": [
+      "Chengxuan Du",
+      "Xin Weng"
+    ],
+    "year": 2022
+  },
+  "Shahnawazuddin et al. - 2020 - Voice Conversion Based Data Augmentation to Improv.pdf": {
+    "title": "PMVC: Data Augmentation-Based Prosody Modeling for Expressive Voice Conversion",
+    "authors": [
+      "Yimin Deng",
+      "Huaizhen Tang",
+      "Xulong Zhang",
+      "Jianzong Wang",
+      "Ning Cheng",
+      "Jing Xiao"
+    ],
+    "year": 2023
+  },
+  "Shankar et al. - 2025 - Selective Attention Merging for low resource tasks A case study of Child ASR.pdf": {
+    "title": "Selective Attention Merging for low resource tasks: A case study of Child ASR",
+    "authors": [
+      "Natarajan Balaji Shankar",
+      "Zilai Wang",
+      "Eray Eren",
+      "Abeer Alwan"
+    ],
+    "year": 2025
+  },
+  "Shi et al. - 2023 - ML-SUPERB Multilingual Speech Universival PERformance Benchmark.pdf": {
+    "title": "ML-SUPERB: Multilingual Speech Universal PERformance Benchmark",
+    "authors": [
+      "Jiatong Shi",
+      "Dan Berrebbi",
+      "William Chen",
+      "En-Pei Hu",
+      "Wei-Ping Huang",
+      "Ho-Lam Chung",
+      "Xuankai Chang",
+      "Shang-Wen Li",
+      "Abdelrahman Mohamed",
+      "Hung-yi Lee",
+      "Shinji Watanabe"
+    ],
+    "year": 2023
+  },
+  "Shivakumar et al. - Improving Speech Recognition for Children using Acoustic Adaptation and Pronunciation Modeling.pdf": {
+    "title": "Improving pronunciation modeling for non-native speech recognition",
+    "authors": [
+      "Tien-Ping Tan",
+      "Laurent Besacier"
+    ],
+    "year": 2008
+  },
+  "Shobaki et al. - 2000 - The OGI kids\u2019 speech corpus and recognizers.pdf": {
+    "title": "The OGI kids\u00b2 speech corpus and recognizers",
+    "authors": [
+      "Khaldoun Shobaki",
+      "John-Paul Hosom",
+      "Ronald A. Cole"
+    ],
+    "year": 2000
+  },
+  "Shor et al. - 2019 - Personalizing ASR for Dysarthric and Accented Speech with Limited Data.pdf": {
+    "title": "Personalizing ASR for Dysarthric and Accented Speech with Limited Data",
+    "authors": [
+      "Joel Shor",
+      "Dotan Emanuel",
+      "Oran Lang",
+      "Omry Tuval",
+      "Michael Brenner",
+      "Julie Cattiau",
+      "Fernando Vieira",
+      "Maeve McNally",
+      "Taylor Charbonneau",
+      "Melissa Nollstadt",
+      "Avinatan Hassidim",
+      "Yossi Matias"
+    ],
+    "year": 2019
+  },
+  "Singh et al. - 2024 - ChildAugment Data Augmentation Methods for Zero-Resource Children's Speaker Verification.pdf": {
+    "title": "ChildAugment: Data augmentation methods for zero-resource children's speaker verification",
+    "authors": [
+      "Vishwanath Pratap Singh",
+      "Md Sahidullah",
+      "Tomi Kinnunen"
+    ],
+    "year": 2024
+  },
+  "Singh et al. - 2025 - Causal Analysis of Asr Errors for Children Quantifying the Impact of Physiological, Cognitive, and.pdf": {
+    "title": "Causal Analysis of Asr Errors for Children: Quantifying the Impact of Physiological, Cognitive, and Extrinsic Factors",
+    "authors": [
+      "Vishwanath Pratap Singh",
+      "Md. Sahidullah",
+      "Tomi Kinnunen"
+    ],
+    "year": 2025
+  },
+  "Sitaram et al. - 2020 - A Survey of Code-switched Speech and Language Proc.pdf": {
+    "title": "Dual Language Models for Code Switched Speech Recognition",
+    "authors": [
+      "Saurabh Garg",
+      "Tanmay Parekh",
+      "Preethi Jyothi"
+    ],
+    "year": 2018
+  },
+  "Sobti et al. - 2022 - Challenges for Designing of Children Speech Corpor.pdf": {
+    "title": "Corpor(e)al Cartographies of New Materialism",
+    "authors": [
+      "Monika Rogowska-Stangret"
+    ],
+    "year": 2017
+  },
+  "Sobti et al. - 2024 - Comprehensive literature review on children automa.pdf": {
+    "title": "Review of Johansson et al. (2024)",
+    "authors": [],
+    "year": 2024
+  },
+  "Southwell et al. - 2024 - Automatic Speech Recognition Tuned for Child Speec.pdf": {
+    "title": "Automatic Speech Recognition Tuned for Child Speech in the Classroom",
+    "authors": [
+      "Rosy Southwell",
+      "Wayne Ward",
+      "Viet Anh Trinh",
+      "Charis Clevenger",
+      "Clay Clevenger",
+      "Emily Watts",
+      "Jason Reitman",
+      "Sidney D\u2019Mello",
+      "Jacob Whitehill"
+    ],
+    "year": 2024
+  },
+  "Sullivan et al. - 2021 - SAYCam A Large, Longitudinal Audiovisual Dataset .pdf": {
+    "title": "SAYCam: A large, longitudinal audiovisual dataset recorded from the infant\u2019s perspective",
+    "authors": [
+      "Jess Sullivan",
+      "Michelle Mei",
+      "Andrew Perfors",
+      "Erica H Wojcik",
+      "Michael C. Frank"
+    ],
+    "year": 2020
+  },
+  "Thienpondt and Demuynck - 2022 - Transfer Learning for Robust Low-Resource Children's Speech ASR with Transformers and Source-Filter.pdf": {
+    "title": "Transfer Learning for Robust Low-Resource Children's Speech ASR with Transformers and Source-Filter Warping",
+    "authors": [
+      "Jenthe Thienpondt",
+      "Kris Demuynck"
+    ],
+    "year": 2022
+  },
+  "Xu et al. - 2020 - LRSpeech Extremely Low-Resource Speech Synthesis and Recognition.pdf": {
+    "title": "Exemplar Abstract for Erythrobacter nanhaisediminis Xu et al. 2010 emend. H\u00f6rdt et al. 2020 and Qipengyuania nanhaisediminis (Xu et al. 2010) Xu et al. 2020.",
+    "authors": [
+      "Charles Thomas Parker",
+      "Kara Mannor",
+      "George M Garrity"
+    ],
+    "year": 2010
+  },
+  "Xu et al. - 2021 - Raise a Child in Large Language Model Towards Eff.pdf": {
+    "title": "Exemplar Abstract for Haloactinobacterium kanbiaonis Xu et al. 2021 and Occultella kanbiaonis (Xu et al. 2021) Xu et al. 2022.",
+    "authors": [
+      "Charles Thomas Parker",
+      "George M Garrity"
+    ],
+    "year": 2021
+  },
+  "Xu et al. - 2021 - The TAL System for the INTERSPEECH2021 Shared Task.pdf": {
+    "title": "The TAL System for the INTERSPEECH2021 Shared Task on Automatic Speech Recognition for Non-Native Childrens Speech",
+    "authors": [
+      "Gaopeng Xu",
+      "Song Yang",
+      "Lu Ma",
+      "Chengfei Li",
+      "Zhongqin Wu"
+    ],
+    "year": 2021
+  },
+  "Yeung and Alwan - 2018 - On the Difficulties of Automatic Speech Recognition for Kindergarten-Aged Children.pdf": {
+    "title": "On the Difficulties of Automatic Speech Recognition for Kindergarten-Aged Children",
+    "authors": [
+      "Gary Yeung",
+      "Abeer Alwan"
+    ],
+    "year": 2018
+  },
+  "Yeung et al. - 2021 - Fundamental frequency feature warping for frequency normalization and data augmentation in child aut.pdf": {
+    "title": "Fundamental frequency feature warping for frequency normalization and data augmentation in child automatic speech recognition",
+    "authors": [
+      "Gary Yeung",
+      "Ruchao Fan",
+      "Abeer Alwan"
+    ],
+    "year": 2021
+  },
+  "Zeisler - 2024 - Reducing Bias in State-of-the-Art ASR Systems for Child Speech.pdf": {
+    "title": "Analysis of speech separation for ASR systems",
+    "authors": [
+      "A. Dabrowski",
+      "D. Cetnarowicz",
+      "T. Marciniak"
+    ],
+    "year": 2004
+  },
+  "Zhao et al. - 2023 - Data augmentation for children ASR and child-adult speaker classification using voice conversion met.pdf": {
+    "title": "Data augmentation for children ASR and child-adult speaker classification using voice conversion methods",
+    "authors": [
+      "Shuyang Zhao",
+      "Mittul Singh",
+      "Abraham Woubie",
+      "Reima Karhila"
+    ],
+    "year": 2023
+  },
+  "Zhou - 2024 - Massively Multilingual Text Translation For Low-Re.pdf": {
+    "title": "Massively Multilingual Neural Machine Translation",
+    "authors": [
+      "Roee Aharoni",
+      "Melvin Johnson",
+      "Orhan Firat"
+    ],
+    "year": 2019
+  },
+  "\u010cerniavski - Cross-lingual and Multilingual Automatic Speech Re.pdf": {
+    "title": "Multi-aspect multilingual and cross-lingual parliamentary speech analysis",
+    "authors": [
+      "Kristian Miok",
+      "Encarnaci\u00f3n Hidalgo Tenorio",
+      "Petya Osenova",
+      "Miguel-\u00c1ngel Ben\u00edtez-Castro",
+      "Marko Robnik-\u0160ikonja"
+    ],
+    "year": 2024
+  }
+}

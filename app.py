@@ -138,51 +138,61 @@ if st.button("Send") and query:
         start = time.time()
         try:
             resp = ask(query, settings=settings)
-            sess = resp.session  # type: PQASession
+            sess = resp.session  # PQASession
 
-            # 1) Extract the answer text
+            # 1) Get the answer (formatted if available, else raw)
             if sess.formatted_answer:
                 ans = sess.formatted_answer
             else:
                 ans = sess.answer or "No answer returned."
 
-            # 2) Extract evidence snippets (contexts is a list[Context])
+            # 2) Get the evidence snippets (a list of Context objects)
             evs = sess.contexts or []
 
-            # 3) Extract cost directly from session
-            #    (instead of computing from usage)
+            # 3) Get cost directly from the session and append to session_state
             cost = sess.cost
+
+            st.session_state.total_cost += cost
 
         except Exception as e:
             ans, evs, cost = f"Error: {e}", [], 0.0
 
         elapsed = time.time() - start
 
-    # 4) Save to history
+    # 4) Append to history
     st.session_state.history.append((query, ans, evs, elapsed, cost))
 
-# — Display chat history —
-for q, a, ctx_list, el, cst in st.session_state.history:
+# — Display chat history —————————
+for q, a, ctx_list, el, cst in reversed(st.session_state.history):
     st.markdown(f"**You:** {q}")
     st.markdown(f"**Answer ({el:.2f}s, Cost: ${cst:.4f}):**  {a}")
 
-    # Show each snippet
+    # Each `c` is a Context object
     for c in ctx_list:
-        snippet_text = c.text.text             # the actual snippet
-        paper_doc    = c.text.doc              # a Doc object
-        title        = paper_doc.title
-        authors      = ", ".join(paper_doc.authors)
-        citation_str = paper_doc.citation      # formatted bib entry
-        page_num     = getattr(c, "page", None)
-        link         = os.path.join(PAPERS_PATH, paper_doc.name)
+        snippet_text = c.text.text          # the actual snippet string
+        paper_doc    = c.text.doc           # a DocDetails object
+        paper_id     = c.text.name          # <-- the filename or paper identifier
 
-        # Build a display name (must fall back gracefully)
+        # Look up metadata: title & authors
+        meta    = st.session_state.metadata_map.get(paper_id, {})
+        title   = meta.get("title", paper_id)
+        authors = ", ".join(meta.get("authors", []))
+
+        # Citation string from the DocDetails
+        citation_str = paper_doc.citation  # e.g. full APA style
+
+        # Page number (if available)
+        page_num = getattr(c, "page", None)
+
+        # Build a clickable link to the local PDF
+        link = os.path.join(PAPERS_PATH, paper_id)
+
+        # Format how you want to display the citation
         cite_display = f"{title} — {authors}" if authors else title
         if page_num is not None:
             cite_display += f" (p. {page_num})"
 
         st.markdown(f"> {snippet_text}\n> [📄 {cite_display}]({link})")
-
 
 # ————————— Sidebar: Metrics —————————
 st.sidebar.markdown("---")
