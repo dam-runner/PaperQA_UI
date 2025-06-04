@@ -71,26 +71,6 @@ def clean_title(raw: str) -> str:
     core = re.sub(r"[^\w\s]", "", core)
     return core
 
-def find_doi_via_crossref(title_guess: str, first_author: str | None = None) -> str | None:
-    """
-    Given a title guess (shortened), query CrossRef (/works?query.title=…) for the top hit.
-    Return its DOI string if found, else None.
-    """
-    params = {"query.title": title_guess, "rows": 1}
-    if first_author:
-        params["query.author"] = first_author
-    if CROSSREF_MAILTO:
-        params["mailto"] = CROSSREF_MAILTO
-    try:
-        resp = requests.get("https://api.crossref.org/works", params=params, timeout=10)
-        resp.raise_for_status()
-        items = resp.json().get("message", {}).get("items", [])
-        if items:
-            return items[0].get("DOI")
-    except Exception:
-        pass
-    return None
-
 def make_json_safe(obj):
     """
     Recursively convert any datetime.datetime → ISO string,
@@ -112,16 +92,20 @@ async def fetch_arxiv_direct(arxiv_id: str) -> dict | None:
     If PaperQA’s arXiv lookup failed, call the official arXiv API directly
     and return a dict with keys:
       "title", "authors", "year", "abstract", "pdf_url".
-    Return None if the HTTP lookup doesn’t yield an <entry>.
+    Return None if the HTTP lookup fails or doesn’t yield an <entry>.
     """
     api_url = f"https://export.arxiv.org/api/query?id_list={arxiv_id}"
-    async with aiohttp.ClientSession() as session:
-        async with session.get(api_url, timeout=10) as resp:
-            if resp.status != 200:
-                return None
-            text = await resp.text()
-    # Now parse the XML. arXiv’s response always wraps each paper in <entry>…</entry>.
-    # A minimal parse (without bringing in feedparser) is:
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(api_url, timeout=10) as resp:
+                if resp.status != 200:
+                    return None
+                text = await resp.text()
+    except Exception:
+        # Any network/SSL error → behave as “no data”
+        return None
+
+    # Parse the XML <entry>…</entry>
     m = re.search(r"<entry>(.*?)</entry>", text, re.DOTALL)
     if not m:
         return None
@@ -131,10 +115,13 @@ async def fetch_arxiv_direct(arxiv_id: str) -> dict | None:
     title_m = re.search(r"<title>(.*?)</title>", entry_xml, re.DOTALL)
     title = title_m.group(1).strip() if title_m else None
 
-    # Extract authors (there are multiple <author><name>…</name></author>)
-    authors = [_.group(1).strip() for _ in re.finditer(r"<author>\s*<name>(.*?)</name>", entry_xml, re.DOTALL)]
+    # Extract authors (<author><name>…</name></author>)
+    authors = [
+        _.group(1).strip()
+        for _ in re.finditer(r"<author>\s*<name>(.*?)</name>", entry_xml, re.DOTALL)
+    ]
 
-    # Extract published date (e.g. 2021-04-05T…)
+    # Extract published year (e.g. 2021-04-05T…)
     pub_m = re.search(r"<published>(\d{4})-(\d{2})-(\d{2})T", entry_xml)
     year = int(pub_m.group(1)) if pub_m else None
 
@@ -142,7 +129,7 @@ async def fetch_arxiv_direct(arxiv_id: str) -> dict | None:
     abs_m = re.search(r"<summary>(.*?)</summary>", entry_xml, re.DOTALL)
     abstract = abs_m.group(1).strip() if abs_m else None
 
-    # Extract the PDF link (there is a link tag with rel="related" and title="pdf", but easier: rel="alternate" for HTML, and rel="related" type="application/pdf")
+    # Extract PDF link (<link rel="related" type="application/pdf" href="…">)
     pdf_url = None
     for link_m in re.finditer(r'<link\s+rel="related"\s+type="application/pdf"\s+href="(.*?)"', entry_xml):
         pdf_url = link_m.group(1)
@@ -164,7 +151,6 @@ all_meta: dict[str, dict] = {}
 
 with open(ZOTERO_CSV, newline="", encoding="utf-8") as f:
     reader = csv.DictReader(f)
-    # Print fieldnames for debugging
     print("Zotero CSV Headers:", reader.fieldnames)
 
     for row in reader:
@@ -172,8 +158,7 @@ with open(ZOTERO_CSV, newline="", encoding="utf-8") as f:
         if not raw_title:
             continue
 
-        # Use the exact Zotero Title as the key in our dictionary
-        fname = raw_title
+        fname = raw_title  # Use exact Zotero Title as the key
 
         authors = [a.strip() for a in row.get("Author", "").split(";") if a.strip()]
         doi_zotero = row.get("DOI", "").strip() or None
@@ -198,7 +183,6 @@ with open(ZOTERO_CSV, newline="", encoding="utf-8") as f:
         publisher = row.get("Publisher", "").strip() or None
         abstract = row.get("Abstract Note", "").strip() or None
 
-        # Initialize with Zotero-provided fields; API fields start as None
         all_meta[fname] = {
             "title": raw_title,
             "authors": authors or None,
@@ -263,9 +247,7 @@ async def fill_entry(fname: str, entry: dict) -> dict:
     # ───── 0) Manual override ─────
     if fname in manual_overrides:
         entry.update(manual_overrides[fname])
-        # We consider this “merged” even if manual override only sets some fields
         merged_any = True
-        # Drop unwanted keys (see step 7) before returning
         for bad_key in [
             "bibtex_source", "arxiv_id", "docname", "dockey",
             "fields_to_overwrite_from_metadata", "key",
@@ -275,22 +257,15 @@ async def fill_entry(fname: str, entry: dict) -> dict:
         return make_json_safe(entry)
 
     # ───── 1) STEP 0: Try arXiv via PaperQA ─────
-    arxiv_id = None
-    # If Zotero provided a URL like "https://arxiv.org/abs/XXXX.XXXXX"
-    url = entry.get("url", "") or ""
-    m = re.search(r"arxiv\.org/abs/([0-9]+\.[0-9]+)", url)
-    if m:
-        arxiv_id = m.group(1)
-
+    arxiv_id = extract_arxiv_id(entry.get("url", "") or "")
     if arxiv_id:
         entry["arxiv_id"] = arxiv_id
-        # 1a) PaperQA lookup
+        # 1a) PaperQA lookup by arxiv_id
         async with sem:
-            await asyncio.sleep(1.0)  # preserve your existing rate‐limit
+            await asyncio.sleep(1.0)  # maintain your rate‐limit
             try:
                 details = await client.query(
-                    title=cleaned,
-                    authors=entry.get("authors", []),
+                    arxiv_id=arxiv_id,
                     fields=[
                         "title", "authors", "year", "doi", "citation_count",
                         "reference_count", "is_open_access", "pdf_url",
@@ -304,14 +279,12 @@ async def fill_entry(fname: str, entry: dict) -> dict:
         if details:
             md = details.model_dump()
             returned_title = (md.get("title") or "").strip()
-            # Only accept if fuzzy match to raw_title ≥ 90
             sim = fuzz.token_sort_ratio(raw_title.lower(), returned_title.lower())
             if sim >= 90:
                 for k, v in md.items():
                     if v is not None:
                         entry[k] = v
                 merged_any = True
-                # drop unwanted keys, then return
                 for bad_key in [
                     "bibtex_source", "docname", "dockey",
                     "fields_to_overwrite_from_metadata", "key",
@@ -319,18 +292,15 @@ async def fill_entry(fname: str, entry: dict) -> dict:
                 ]:
                     entry.pop(bad_key, None)
                 return make_json_safe(entry)
-            # else: PaperQA had an arXiv record but it returned the “wrong” title.
-            # fall through to HTTP fallback
+            # Otherwise, PaperQA had a mismatched title → fall through
 
         # 1b) Direct HTTP fallback to arXiv API
         http_meta = await fetch_arxiv_direct(arxiv_id)
         if http_meta:
-            # http_meta contains at least {title, authors, year, abstract, pdf_url}
             for k, v in http_meta.items():
                 if v is not None:
                     entry[k] = v
             merged_any = True
-            # drop unwanted keys, then return
             for bad_key in [
                 "bibtex_source", "arxiv_id", "docname", "dockey",
                 "fields_to_overwrite_from_metadata", "key",
@@ -338,9 +308,7 @@ async def fill_entry(fname: str, entry: dict) -> dict:
             ]:
                 entry.pop(bad_key, None)
             return make_json_safe(entry)
-
-        # If we reach here, both PaperQA and HTTP arXiv failed → do NOT log yet.
-        # fall through to STEP 1
+        # If both fail, fall through
 
     # ───── 2) STEP 1: Zotero DOI (if present) ─────
     zotero_doi = entry.get("doi")
@@ -349,8 +317,7 @@ async def fill_entry(fname: str, entry: dict) -> dict:
             await asyncio.sleep(1.0)
             try:
                 details = await client.query(
-                    title=cleaned,
-                    authors=entry.get("authors", []),
+                    doi=zotero_doi,
                     fields=[
                         "title", "authors", "year", "doi", "citation_count",
                         "reference_count", "is_open_access", "pdf_url",
@@ -370,7 +337,6 @@ async def fill_entry(fname: str, entry: dict) -> dict:
                     if v is not None:
                         entry[k] = v
                 merged_any = True
-                # drop unwanted keys, then return
                 for bad_key in [
                     "bibtex_source", "arxiv_id", "docname", "dockey",
                     "fields_to_overwrite_from_metadata", "key",
@@ -378,18 +344,15 @@ async def fill_entry(fname: str, entry: dict) -> dict:
                 ]:
                     entry.pop(bad_key, None)
                 return make_json_safe(entry)
-            # else: Zotero’s DOI returned a mismatched title → fall through
+            # Otherwise, DOI returned a mismatched title → fall through
 
     # ───── 3) STEP 2: CrossRef fuzzy‐title → DOI ─────
-    # Build two query strings: raw_title (with punctuation) and stripped (no punctuation)
     stripped = re.sub(r"[^\w\s]", "", raw_title)
-    params = {
-        "query.title": raw_title,
-        "rows": 3
-    }
+    params = {"query.title": raw_title, "rows": 3}
     if authors:
-        # Use last name of first author to narrow CrossRef search
         params["query.author"] = authors[0].split()[-1]
+    if CROSSREF_MAILTO:
+        params["mailto"] = CROSSREF_MAILTO
 
     try:
         resp = requests.get("https://api.crossref.org/works", params=params, timeout=10)
@@ -415,8 +378,7 @@ async def fill_entry(fname: str, entry: dict) -> dict:
                 await asyncio.sleep(1.0)
                 try:
                     details = await client.query(
-                        title=cleaned,
-                        authors=entry.get("authors", []),
+                        doi=found_doi,
                         fields=[
                             "title", "authors", "year", "doi", "citation_count",
                             "reference_count", "is_open_access", "pdf_url",
@@ -436,7 +398,6 @@ async def fill_entry(fname: str, entry: dict) -> dict:
                         if v is not None:
                             entry[k] = v
                     merged_any = True
-                    # drop unwanted keys, then return
                     for bad_key in [
                         "bibtex_source", "arxiv_id", "docname", "dockey",
                         "fields_to_overwrite_from_metadata", "key",
@@ -444,7 +405,7 @@ async def fill_entry(fname: str, entry: dict) -> dict:
                     ]:
                         entry.pop(bad_key, None)
                     return make_json_safe(entry)
-            # else: CrossRef’s DOI returned a mismatched title → fall through
+            # Otherwise, CrossRef’s DOI returned a mismatched title → fall through
 
     # ───── 4) STEP 3: title+author fallback ─────
     if not entry.get("doi"):
@@ -457,8 +418,7 @@ async def fill_entry(fname: str, entry: dict) -> dict:
             await asyncio.sleep(1.0)
             try:
                 details = await client.query(
-                    title=cleaned,
-                    authors=entry.get("authors", []),
+                    **fallback_kwargs,
                     fields=[
                         "title", "authors", "year", "doi", "citation_count",
                         "reference_count", "is_open_access", "pdf_url",
@@ -476,7 +436,6 @@ async def fill_entry(fname: str, entry: dict) -> dict:
             ret_year = md.get("year")
             year_ok = (zotero_year is not None and ret_year == zotero_year)
 
-            # Check author last‐name overlap
             zotero_last = {a.split()[-1].lower() for a in authors}
             ret_last = {a.split()[-1].lower() for a in (md.get("authors") or [])}
             overlap = len(zotero_last & ret_last) / max(len(zotero_last), 1) if zotero_last else 0
@@ -486,7 +445,6 @@ async def fill_entry(fname: str, entry: dict) -> dict:
                     if v is not None:
                         entry[k] = v
                 merged_any = True
-                # drop unwanted keys, then return
                 for bad_key in [
                     "bibtex_source", "arxiv_id", "docname", "dockey",
                     "fields_to_overwrite_from_metadata", "key",
@@ -494,21 +452,21 @@ async def fill_entry(fname: str, entry: dict) -> dict:
                 ]:
                     entry.pop(bad_key, None)
                 return make_json_safe(entry)
-            # else: fallback returned something, but it didn’t meet our (title+year+author) criteria
+            # Otherwise, fallback result didn’t pass title/year/author checks
 
     # ───── 5) STEP 4: Final fallback “give up” ─────
     if not merged_any:
-        # If Zotero had a link attachment, use it as pdf_url if pdf_url is still empty
+        # If Zotero had a link attachment, use it as pdf_url if pdf_url is empty
         if not entry.get("pdf_url") and entry.get("link_attachments"):
             entry["pdf_url"] = entry["link_attachments"][0]
 
-        # Now truly log exactly one line to mismatch.log
+        # Exactly one line to mismatch.log
         with open("mismatch.log", "a", encoding="utf-8") as logf:
             logf.write(f"{fname} → No reliable metadata found via arXiv/DOI/Title\n")
 
-    # ───── 6) Drop the 8 unwanted keys ─────
+    # ───── 6) Drop the 7 unwanted keys ─────
     for bad_key in [
-        "bibtex_source", "arxiv_id", "docname", "dockey",
+        "bibtex_source", "docname", "dockey",
         "fields_to_overwrite_from_metadata", "key",
         "bibtex_type", "doc_id"
     ]:
