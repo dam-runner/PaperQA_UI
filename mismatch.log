@@ -1,23 +1,63 @@
-like_a_bilingual_baby_the_advantage_of_visually_grounding_a_bilingual_language_model → Title mismatch: guessed “like a bilingual baby: the advantage of visually grounding a bilingual language model” vs returned “bilingual investments of dual-language immersion program alumni” (score 50.79365079365079)
-few_shot_learning_with_multilingual_language_models → No reliable metadata found via API.
-learning_not_to_discriminate_task_agnostic_learning_for_improving_monolingual_and_code_switched_speech_recognition → Title mismatch: guessed “learning not to discriminate: task agnostic learning for improving monolingual and code-switched speech recognition” vs returned “speech-to-text and text-to-speech recognition using deep learning” (score 52.27272727272727)
-speechstew_simply_mix_all_available_speech_recognition_data_to_train_one_large_neural_network → Title mismatch: guessed “speechstew: simply mix all available speech recognition data to train one large neural network” vs returned “listen, attend and spell: a neural network for large vocabulary conversational speech recognition” (score 45.58823529411765)
-fasa_a_flexible_and_automatic_speech_aligner_for_extracting_high_quality_aligned_children_speech_data → Title mismatch: guessed “fasa: a flexible and automatic speech aligner for extracting high-quality aligned children speech data” vs returned “automatic screening for children with speech disorder using automatic speech recognition: opportunities and challenges” (score 50.90909090909091)
-evaluating_and_improving_child_directed_automatic_speech_recognition → Year mismatch: guessed 2020 vs returned 1997
-robust_speech_recognition_via_large_scale_weak_supervision → Year mismatch: guessed 2023 vs returned 1982
-lpc_augment_an_lpc_based_asr_data_augmentation_algorithm_for_low_and_zero_resource_children_s_dialects → No reliable metadata found via API.
-collecting_and_annotating_natural_child_speech_data_challenges_and_interdisciplinary_perspectives → Title mismatch: guessed “collecting and annotating natural child speech data – challenges and interdisciplinary perspectives” vs returned “technological and methodological challenges in creating, annotating and sharing a learner corpus of spoken german” (score 47.27272727272728)
-cross_lingual_and_multilingual_automatic_speech_recognition_for_scandinavian_languages → Title mismatch: guessed “cross-lingual and multilingual automatic speech recognition for scandinavian languages” vs returned “a speech recognition enabled ambulance call report system for paramedics” (score 52.542372881355924)
-book_reviews_statistical_methods_for_speech_recognition → No reliable metadata found via API.
-a_systematic_review_on_language_identification_of_code_mixed_text_techniques_data_availability_challenges_and_framework_development → Year mismatch: guessed 2022 vs returned 2024
-bilingual_language_acquisition → Year mismatch: guessed 2017 vs returned 2019
-design_and_development_a_childrens_speech_database → Title mismatch: guessed “design and development a children’s speech database” vs returned “160. urban speech (czech) / stadtsprache (tschechisch)” (score 37.64705882352941)
-learning_robust_and_multilingual_speech_representations → No reliable metadata found via API.
-understanding_multilingual_language_models_training_representation_and_architecture → Title mismatch: guessed “understanding multilingual language models: training, representation and architecture” vs returned “updated segment anything model (sam) architecture&amp;nbsp;&amp;nbsp;” (score 51.02040816326531)
-massively_multilingual_text_translation_for_low_resource_languages → Year mismatch: guessed 2024 vs returned 2018
-multilingual_distilwhisper_efficient_distillation_of_multi_task_speech_models_via_language_specific_experts → No reliable metadata found via API.
-data_augmentation_for_children_s_speech_recognition_the_ethiopian_system_for_the_slt_2021_children_speech_recognition_challenge → No reliable metadata found via API.
-pdf_towards_inclusive_automatic_speech_recognition → Year mismatch: guessed 2021 vs returned 2024
-improving_on_the_limitations_of_the_asr_model_in_low_resourced_environments_using_parameter_efficient_fine_tuning → Title mismatch: guessed “improving on the limitations of the asr model in low-resourced environments using parameter-efficient fine-tuning” vs returned “exploiting multilingualism through multistage fine-tuning for low-resource neural machine translation” (score 48.61878453038674)
-cross_language_transfer_learning_continuous_learning_and_domain_adaptation_for_end_to_end_automatic_speech_recognition → No reliable metadata found via API.
-reducing_bias_in_state_of_the_art_asr_systems_for_child_speech → No reliable metadata found via API.
+
+Like a bilingual baby: The advantage of visually grounding a bilingual language model → arXiv ID 2210.05487 returned no data
+Like a bilingual baby: The advantage of visually grounding a bilingual language model → CrossRef lookup for “Like a bilingual baby” found no DOI
+Like a bilingual baby: The advantage of visually grounding a bilingual language model → title+author query returned no data
+Like a bilingual baby: The advantage of visually grounding a bilingual language model → No reliable metadata found via arXiv/DOI/Title
+Few-shot Learning with Multilingual Language Models → arXiv ID 2112.10668 returned no data
+Few-shot Learning with Multilingual Language Models → Zotero DOI 10.48550/arXiv.2112.10668 returned no data
+Overview of the interspeech tlt2020 shared task onasr for non-native children’s speech → CrossRef lookup for “Overview of the interspeech tlt2020 shared task onasr for nonnative childrens speech” found no DOI
+Overview of the interspeech tlt2020 shared task onasr for non-native children’s speech → title+author query returned no data
+Overview of the interspeech tlt2020 shared task onasr for non-native children’s speech → No reliable metadata found via arXiv/DOI/Title
+Learning not to Discriminate: Task Agnostic Learning for Improving Monolingual and Code-switched Speech Recognition → arXiv ID 2006.05257 returned no data
+SpeechStew: Simply Mix All Available Speech Recognition Data to Train One Large Neural Network → arXiv ID 2104.02133 returned no data
+SpeechStew: Simply Mix All Available Speech Recognition Data to Train One Large Neural Network → CrossRef lookup for “SpeechStew” found no DOI
+SpeechStew: Simply Mix All Available Speech Recognition Data to Train One Large Neural Network → title+author query returned no data
+SpeechStew: Simply Mix All Available Speech Recognition Data to Train One Large Neural Network → No reliable metadata found via arXiv/DOI/Title
+XLS-R: Self-supervised Cross-lingual Speech Representation Learning at Scale → arXiv ID 2111.09296 returned no data
+XLS-R: Self-supervised Cross-lingual Speech Representation Learning at Scale → CrossRef lookup for “XLSR” found no DOI
+XLS-R: Self-supervised Cross-lingual Speech Representation Learning at Scale → title+author query returned no data
+XLS-R: Self-supervised Cross-lingual Speech Representation Learning at Scale → No reliable metadata found via arXiv/DOI/Title
+GigaSpeech: An Evolving, Multi-domain ASR Corpus with 10,000 Hours of Transcribed Audio → arXiv ID 2106.06909 returned no data
+FASA: a Flexible and Automatic Speech Aligner for Extracting High-quality Aligned Children Speech Data → CrossRef lookup for “FASA” found no DOI
+Multilingual children's language use: The case of “the return of Superman” show → CrossRef lookup for “Multilingual childrens language use” found no DOI
+Multilingual children's language use: The case of “the return of Superman” show → title+author query returned no data
+Multilingual children's language use: The case of “the return of Superman” show → No reliable metadata found via arXiv/DOI/Title
+Bi- and Multilingual Language Acquisition → CrossRef lookup for “Bi and Multilingual Language Acquisition” found no DOI
+Bi- and Multilingual Language Acquisition → title+author query returned no data
+Bi- and Multilingual Language Acquisition → No reliable metadata found via arXiv/DOI/Title
+Code-mixing and language dominance: bilingual, trilingual and multilingual children compared → Zotero DOI 10.1080/14790718.2019.1569017 returned no data
+Benchmarking Children's ASR with Supervised and Self-supervised Speech Foundation Models → arXiv ID 2406.10507 returned no data
+The Phonbank Database within Talkbank, and a Practical Overview of the Phon Program → CrossRef lookup for “The Phonbank Database within Talkbank and a Practical Overview of the Phon Program” found no DOI
+Cristia: Accuracy of the language environment analysis... - Google Scholar → CrossRef lookup for “Cristia” found no DOI
+Cristia: Accuracy of the language environment analysis... - Google Scholar → title+author query returned no data
+Cristia: Accuracy of the language environment analysis... - Google Scholar → No reliable metadata found via arXiv/DOI/Title
+LPC Augment: An LPC-Based ASR Data Augmentation Algorithm for Low and Zero-Resource Children's Dialects → arXiv ID 2202.09529 returned no data
+LPC Augment: An LPC-Based ASR Data Augmentation Algorithm for Low and Zero-Resource Children's Dialects → Zotero DOI 10.48550/arXiv.2202.09529 returned no data
+A Survey of Code-switched Speech and Language Processing → arXiv ID 1904.00784 returned no data
+Multilingual and code-switching ASR challenges for low resource Indian languages → arXiv ID 2104.00235 returned no data
+SpecAugment: A Simple Data Augmentation Method for Automatic Speech Recognition → arXiv ID 1904.08779 returned no data
+SERENGETI: Massively Multilingual Language Models for Africa → arXiv ID 2212.10785 returned no data
+Learning Robust and Multilingual Speech Representations → arXiv ID 2001.11128 returned no data
+Learning Robust and Multilingual Speech Representations → Zotero DOI 10.48550/arXiv.2001.11128 returned no data
+Self-Supervised Speech Representation Learning: A Review → arXiv ID 2205.10643 returned no data
+Massively Multilingual Text Translation For Low-Resource Languages → arXiv ID 2401.16582 returned no data
+A Wav2vec2-Based Experimental Study on Self-Supervised Learning Methods to Improve Child Speech Recognition → arXiv ID 2204.05419 returned no data
+Multilingual DistilWhisper: Efficient Distillation of Multi-task Speech Models via Language-Specific Experts → arXiv ID 2311.01070 returned no data
+Multilingual DistilWhisper: Efficient Distillation of Multi-task Speech Models via Language-Specific Experts → Zotero DOI 10.48550/arXiv.2311.01070 returned no data
+Data Augmentation For Children's Speech Recognition -- The "Ethiopian" System For The SLT 2021 Children Speech Recognition Challenge → arXiv ID 2011.04547 returned no data
+Data Augmentation For Children's Speech Recognition -- The "Ethiopian" System For The SLT 2021 Children Speech Recognition Challenge → Zotero DOI 10.48550/arXiv.2011.04547 returned no data
+(PDF) Towards inclusive automatic speech recognition → CrossRef lookup for “” found no DOI
+(PDF) Towards inclusive automatic speech recognition → title+author query returned no data
+(PDF) Towards inclusive automatic speech recognition → No reliable metadata found via arXiv/DOI/Title
+Cross-Language Transfer Learning, Continuous Learning, and Domain Adaptation for End-to-End Automatic Speech Recognition → arXiv ID 2005.04290 returned no data
+Cross-Language Transfer Learning, Continuous Learning, and Domain Adaptation for End-to-End Automatic Speech Recognition → Zotero DOI 10.48550/arXiv.2005.04290 returned no data
+Acoustics of children’s speech: Developmental changes of temporal and spectral parametersa) → CrossRef lookup for “Acoustics of childrens speech” found no DOI
+Acoustics of children’s speech: Developmental changes of temporal and spectral parametersa) → title+author query returned no data
+Acoustics of children’s speech: Developmental changes of temporal and spectral parametersa) → No reliable metadata found via arXiv/DOI/Title
+Improving Children's Speech Recognition by Fine-tuning Self-supervised Adult Speech Representations → arXiv ID 2211.07769 returned no data
+Selective Attention Merging for low resource tasks: A case study of Child ASR → arXiv ID 2501.08468 returned no data
+Transfer Learning for Robust Low-Resource Children's Speech ASR with Transformers and Source-Filter Warping → Zotero DOI 10.21437/Interspeech.2022-10964 returned no data
+ChildAugment: Data Augmentation Methods for Zero-Resource Children's Speaker Verification → arXiv ID 2402.15214 returned no data
+Reducing Bias in State-of-the-Art ASR Systems for Child Speech → CrossRef lookup for “Reducing Bias in StateoftheArt ASR Systems for Child Speech” found no DOI
+Reducing Bias in State-of-the-Art ASR Systems for Child Speech → title+author query returned no data
+Reducing Bias in State-of-the-Art ASR Systems for Child Speech → No reliable metadata found via arXiv/DOI/Title

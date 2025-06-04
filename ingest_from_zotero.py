@@ -1,27 +1,37 @@
 #!/usr/bin/env python3
 """
-ingest_from_zotero.py
+robust_ingest_from_zotero.py
 
-1) Read Zotero CSV (zotero.csv), using "Title" as the unique key (slugified).  
-2) Pull in exactly the Zotero fields you want (genre, DOI, link attachments, tags, etc.).  
-3) Call PaperQA’s DocMetadataClient (or CrossRef fallback) only for missing fields:
-     - citation_count, reference_count, is_open_access, publisher, etc.
-     - Perform title‐fuzziness and year‐sanity checks; log any mismatches.  
-4) Honor manual_overrides.json for any paper you want to hardcode.  
-5) Write out metadata_trimmed.json containing only your chosen fields.
+A robust metadata ingestion pipeline from a Zotero CSV, using:
+  - arXiv ID lookup (if Zotero URL is an arXiv link)
+  - Zotero’s DOI (if present and returns data)
+  - CrossRef fuzzy-title → new DOI → query
+  - Fallback: title + authors with high fuzzy match threshold
+
+All mismatch or failure events are logged to mismatch.log.
+Final output is a fully JSON-safe metadata_trimmed.json.
 
 Usage:
-  python ingest_from_zotero.py
+  1. Ensure .env contains at least:
+       OPENAI_API_KEY=sk-...
+       (Optional) CROSSREF_MAILTO=you@example.com
+       (Optional) SEMANTIC_SCHOLAR_API_KEY=...
+  2. Install dependencies:
+       pip install paperqa aiohttp python-dotenv requests rapidfuzz
+  3. Place zotero.csv in the same directory.
+  4. Run:
+       python robust_ingest_from_zotero.py
 """
 
 import os
 import csv
 import json
+import re
 import asyncio
 import requests
-from rapidfuzz import fuzz
+import datetime
 from dotenv import load_dotenv
-from slugify import slugify  # pip install python-slugify
+from rapidfuzz import fuzz
 from paperqa.clients import DocMetadataClient, ALL_CLIENTS
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -34,21 +44,42 @@ CROSSREF_MAILTO = os.getenv("CROSSREF_MAILTO", None)
 OPENALEX_MAILTO = os.getenv("OPENALEX_MAILTO", None)
 
 if not OPENAI_API_KEY:
-    raise RuntimeError("Missing OPENAI_API_KEY in .env")
+    raise RuntimeError("⚠️ Missing OPENAI_API_KEY in .env")
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 1) Fuzzy‐Title → DOI via CrossRef (restricted by first author if given)
+# 1) Helper functions
 # ─────────────────────────────────────────────────────────────────────────────
+
+ARXIV_PATTERN = re.compile(r"^https?://arxiv\.org/abs/([^/]+)")
+
+def extract_arxiv_id(url: str) -> str | None:
+    """
+    If url matches 'http://arxiv.org/abs/<id>' or 'https://arxiv.org/abs/<id>',
+    return the <id> part, else None.
+    """
+    m = ARXIV_PATTERN.match(url or "")
+    return m.group(1) if m else None
+
+def clean_title(raw: str) -> str:
+    """
+    Simplify raw title by:
+      1) Stripping anything after first colon, em-dash, or parenthesis.
+      2) Removing remaining punctuation.
+    """
+    core = re.split(r"[:—\(]", raw)[0].strip()
+    core = re.sub(r"[^\w\s]", "", core)
+    return core
+
 def find_doi_via_crossref(title_guess: str, first_author: str | None = None) -> str | None:
     """
-    Query CrossRef’s /works?query.title=…[&query.author=…] to get the top DOI.
+    Given a title guess (shortened), query CrossRef (/works?query.title=…) for the top hit.
+    Return its DOI string if found, else None.
     """
     params = {"query.title": title_guess, "rows": 1}
     if first_author:
         params["query.author"] = first_author
     if CROSSREF_MAILTO:
         params["mailto"] = CROSSREF_MAILTO
-
     try:
         resp = requests.get("https://api.crossref.org/works", params=params, timeout=10)
         resp.raise_for_status()
@@ -59,101 +90,68 @@ def find_doi_via_crossref(title_guess: str, first_author: str | None = None) -> 
         pass
     return None
 
-# ─────────────────────────────────────────────────────────────────────────────
-# 2) Direct CrossRef /works/{doi} lookup (fallback)
-# ─────────────────────────────────────────────────────────────────────────────
-def crossref_lookup_by_doi(doi: str) -> dict | None:
+def make_json_safe(obj):
     """
-    Given a DOI, call CrossRef /works/{doi} to get minimal metadata.
-    Returns a dict with keys: "title", "authors", "year", "container_title".
+    Recursively convert any datetime.datetime → ISO string,
+    set/tuple → list, and sanitize nested dict/list.
     """
-    url = f"https://api.crossref.org/works/{doi}"
-    params = {}
-    if CROSSREF_MAILTO:
-        params["mailto"] = CROSSREF_MAILTO
-
-    try:
-        r = requests.get(url, params=params, timeout=10)
-        r.raise_for_status()
-        item = r.json().get("message", {})
-        title = (item.get("title") or [""])[0]
-        author_list = []
-        for a in item.get("author", []):
-            given = a.get("given", "").strip()
-            family = a.get("family", "").strip()
-            if given or family:
-                author_list.append(f"{given} {family}".strip())
-        year = item.get("issued", {}).get("date-parts", [[None]])[0][0]
-        container = (item.get("container-title") or [""])[0]
-        return {
-            "title": title,
-            "authors": author_list,
-            "year": year,
-            "container_title": container,
-        }
-    except Exception:
-        return None
+    if isinstance(obj, dict):
+        return {k: make_json_safe(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [make_json_safe(v) for v in obj]
+    if isinstance(obj, (set, tuple)):
+        return [make_json_safe(v) for v in obj]
+    if isinstance(obj, datetime.datetime):
+        return obj.isoformat()
+    return obj  # str, int, float, bool, None are JSON-safe
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 3) Load Zotero CSV (zotero.csv) using "Title" as key (slugify to avoid invalid JSON keys)
+# 2) Load Zotero CSV
 # ─────────────────────────────────────────────────────────────────────────────
 ZOTERO_CSV = "zotero.csv"
 all_meta: dict[str, dict] = {}
 
 with open(ZOTERO_CSV, newline="", encoding="utf-8") as f:
     reader = csv.DictReader(f)
+    # Print fieldnames for debugging
+    print("Zotero CSV Headers:", reader.fieldnames)
+
     for row in reader:
         raw_title = row.get("Title", "").strip()
         if not raw_title:
             continue
 
-        # Create a slug from the title to use as our dictionary key
-        fname = slugify(raw_title, separator="_")
+        # Use the exact Zotero Title as the key in our dictionary
+        fname = raw_title
 
-        # Zotero fields we want:
         authors = [a.strip() for a in row.get("Author", "").split(";") if a.strip()]
-        doi = row.get("DOI", "").strip() or None
+        doi_zotero = row.get("DOI", "").strip() or None
         url = row.get("Url", "").strip() or None
         journal = row.get("Publication Title", "").strip() or None
         year = None
         if row.get("Publication Year", "").isdigit():
             year = int(row["Publication Year"])
-
-        # Item Type → genre
-        zotero_type = row.get("Item Type", "").strip()
-        genre = zotero_type  # e.g. "journalArticle" or "conferencePaper"
-
-        # Link Attachments (direct PDF URLs)
+        genre = row.get("Item Type", "").strip() or None
         link_attachments = [
-            l.strip()
-            for l in row.get("Link Attachments", "").split(";")
-            if l.strip()
+            l.strip() for l in row.get("Link Attachments", "").split(";") if l.strip()
         ]
-
-        # Manual and Automatic Tags
         manual_tags = [
-            t.strip()
-            for t in row.get("Manual Tags", "").split(";")
-            if t.strip()
+            t.strip() for t in row.get("Manual Tags", "").split(";") if t.strip()
         ]
         automatic_tags = [
-            t.strip()
-            for t in row.get("Automatic Tags", "").split(";")
-            if t.strip()
+            t.strip() for t in row.get("Automatic Tags", "").split(";") if t.strip()
         ]
-
-        # Pages / Issue / Volume / Publisher / Abstract
         pages = row.get("Pages", "").strip() or None
         issue = row.get("Issue", "").strip() or None
         volume = row.get("Volume", "").strip() or None
         publisher = row.get("Publisher", "").strip() or None
         abstract = row.get("Abstract Note", "").strip() or None
 
-        # Initialize the metadata entry
+        # Initialize with Zotero-provided fields; API fields start as None
         all_meta[fname] = {
-            "title": raw_title or None,
+            "title": raw_title,
             "authors": authors or None,
-            "doi": doi,
+            "doi": doi_zotero,
             "url": url,
             "journal": journal,
             "year": year,
@@ -166,7 +164,7 @@ with open(ZOTERO_CSV, newline="", encoding="utf-8") as f:
             "volume": volume,
             "publisher": publisher,
             "abstract": abstract,
-            # placeholders for API‐supplied fields:
+            # Placeholders for API enrichments:
             "publication_date": None,
             "citation_count": None,
             "reference_count": None,
@@ -178,164 +176,205 @@ with open(ZOTERO_CSV, newline="", encoding="utf-8") as f:
             "subject": None,
             "bibtex_source": [],
             "source_quality": None,
+            "arxiv_id": None,
         }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 4) Load manual_overrides.json (if present)
+# 3) Load manual_overrides.json (if present)
 # ─────────────────────────────────────────────────────────────────────────────
-MANUAL_OVERRIDES = "manual_overrides.json"
-if os.path.exists(MANUAL_OVERRIDES):
-    with open(MANUAL_OVERRIDES, "r", encoding="utf-8") as f:
+manual_overrides = {}
+if os.path.exists("manual_overrides.json"):
+    with open("manual_overrides.json", "r", encoding="utf-8") as f:
         manual_overrides = json.load(f)
-else:
-    manual_overrides = {}
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 5) Define the async "fill_with_api" routine (no PDF metadata extraction)
+# 4) Asynchronous “fill entry” coroutine
 # ─────────────────────────────────────────────────────────────────────────────
-async def fill_with_api(fname: str, entry: dict) -> dict:
+sem = asyncio.Semaphore(1)
+
+async def fill_entry(fname: str, entry: dict) -> dict:
     """
-    Fill missing fields in `entry` via PaperQA’s DocMetadataClient → CrossRef fallback.
-    Honor manual_overrides first; perform title and year sanity checks.
-    Returns the updated entry (possibly unchanged if no API result was good).
+    1) If manual override exists for fname, merge and return.
+    2) Step 0: If Zotero URL is arXiv, query by arXiv ID.
+    3) Step 1: If Zotero DOI present, query by that DOI exactly once.
+    4) Step 2: Clean title, ask CrossRef for a new DOI, then query by that DOI.
+    5) Step 3: Last‐resort title+authors query with high fuzzy threshold.
+    6) Step 4: Fallback to Zotero-only. Log every failure to mismatch.log.
     """
-    # 5a) If fname is in manual_overrides, merge and return immediately:
+    # 4a) Apply manual override if it exists
     if fname in manual_overrides:
         entry.update(manual_overrides[fname])
-        return entry
+        return make_json_safe(entry)
 
     client = DocMetadataClient(clients=ALL_CLIENTS)
 
-    # 5b) Build query_kwargs:
-    doi = entry.get("doi")
-    if doi:
-        query_kwargs = {"doi": doi}
-    else:
-        # No DOI → attempt CrossRef fuzzy‐title (restrict by first author if possible)
-        title_guess = entry.get("title") or fname.replace("_", " ")
-        authors = entry.get("authors") or []
-        first_author = authors[0].split()[-1] if authors else None
+    # STEP 0: If Zotero URL is an arXiv link, do arXiv lookup first
+    url = entry.get("url", "")
+    arxiv_id = extract_arxiv_id(url)
+    if arxiv_id:
+        entry["arxiv_id"] = arxiv_id
+        print(f">>> [{fname}] Identified Zotero URL as arXiv: {arxiv_id}")
+        async with sem:
+            await asyncio.sleep(1.0)
+            try:
+                details = await client.query(arxiv_id=arxiv_id, fields=[
+                    "title", "authors", "year", "doi", "citation_count",
+                    "reference_count", "is_open_access", "pdf_url",
+                    "fields_of_study", "crossref_subjects", "publisher",
+                    "container_title", "bibtex_source", "source_quality",
+                ])
+            except Exception as e:
+                print(f"    ❌ arXiv query error for {arxiv_id}: {e}")
+                details = None
 
-        doi_found = find_doi_via_crossref(title_guess, first_author)
-        if doi_found:
-            query_kwargs = {"doi": doi_found}
-            entry["doi"] = doi_found
+        if details:
+            md = details.model_dump()
+            md.pop("other", None)
+            for k, v in md.items():
+                if v is not None:
+                    entry[k] = v
+            return make_json_safe(entry)
         else:
-            # Fallback: direct match by title + authors
-            query_kwargs = {"title": title_guess}
-            if authors:
-                query_kwargs["authors"] = authors
-
-    # 5c) Rate‐limit: one query at a time + small delay
-    details = None
-    await asyncio.sleep(1.0)
-    try:
-        details = await client.query(
-            **query_kwargs,
-            fields=[
-                "title",
-                "authors",
-                "year",
-                "doi",
-                "venue",
-                "citation_count",
-                "reference_count",
-                "is_open_access",
-                "pdf_url",
-                "license",
-                "fields_of_study",
-                "crossref_subjects",
-                "publisher",
-                "journal_volume",
-                "journal_issue",
-                "journal_pages",
-                "arxiv_primary_category",
-                "journal_ref",
-                "num_pages",
-                "topics",
-                "genre",
-                "bibtex_source",
-                "source_quality",
-            ],
-        )
-    except Exception:
-        details = None
-
-    # 5d) If we got a result, sanitize + sanity‐check it:
-    if details:
-        md = details.model_dump()
-        md.pop("other", None)  # drop the giant “other” block
-
-        # Title similarity check
-        returned_title = (md.get("title") or "").lower()
-        guess = (entry.get("title") or "").lower()
-        if not guess:
-            guess = fname.replace("_", " ").lower()
-        sim = fuzz.partial_ratio(guess, returned_title)
-        if sim < 60:
             with open("mismatch.log", "a", encoding="utf-8") as log:
-                log.write(
-                    f"{fname} → Title mismatch: guessed “{guess}” vs returned “{returned_title}” (score {sim})\n"
-                )
+                log.write(f"{fname} → arXiv ID {arxiv_id} returned no data\n")
+
+    # STEP 1: If Zotero DOI is present, try exactly that once
+    zotero_doi = entry.get("doi")
+    if zotero_doi:
+        print(f">>> [{fname}] Trying Zotero DOI: {zotero_doi}")
+        async with sem:
+            await asyncio.sleep(1.0)
+            try:
+                details = await client.query(doi=zotero_doi, fields=[
+                    "title", "authors", "year", "doi", "citation_count",
+                    "reference_count", "is_open_access", "pdf_url",
+                    "fields_of_study", "crossref_subjects", "publisher",
+                    "container_title", "bibtex_source", "source_quality",
+                ])
+            except Exception as e:
+                print(f"    ❌ Error querying Zotero DOI {zotero_doi}: {e}")
+                details = None
+
+        if details:
+            md = details.model_dump()
+            md.pop("other", None)
+            for k, v in md.items():
+                if v is not None:
+                    entry[k] = v
+            return make_json_safe(entry)
         else:
-            # Year sanity check
-            guessed_year = entry.get("year")
-            returned_year = md.get("year")
-            if guessed_year and returned_year and abs(returned_year - guessed_year) > 1:
-                with open("mismatch.log", "a", encoding="utf-8") as log:
-                    log.write(
-                        f"{fname} → Year mismatch: guessed {guessed_year} vs returned {returned_year}\n"
-                    )
-            else:
-                # Merge all non‐None returned fields into entry
+            with open("mismatch.log", "a", encoding="utf-8") as log:
+                log.write(f"{fname} → Zotero DOI {zotero_doi} returned no data\n")
+
+    # STEP 2: CrossRef “clean title → new DOI → query”
+    raw = entry.get("title", "")
+    cleaned = clean_title(raw)
+    first_author = (entry.get("authors") or [None])[0]
+    if first_author:
+        first_author = first_author.split()[-1]  # last name only
+
+    print(f">>> [{fname}] CrossRef lookup for “{cleaned}” …")
+    found_doi = find_doi_via_crossref(cleaned, first_author)
+    if found_doi:
+        print(f"    ✅ CrossRef returned DOI = {found_doi}")
+        entry["doi"] = found_doi
+        async with sem:
+            await asyncio.sleep(1.0)
+            try:
+                details = await client.query(doi=found_doi, fields=[
+                    "title", "authors", "year", "doi", "citation_count",
+                    "reference_count", "is_open_access", "pdf_url",
+                    "fields_of_study", "crossref_subjects", "publisher",
+                    "container_title", "bibtex_source", "source_quality",
+                ])
+            except Exception as e:
+                print(f"    ❌ Error querying CrossRef DOI {found_doi}: {e}")
+                details = None
+
+        if details:
+            md = details.model_dump()
+            md.pop("other", None)
+            for k, v in md.items():
+                if v is not None:
+                    entry[k] = v
+            return make_json_safe(entry)
+        else:
+            with open("mismatch.log", "a", encoding="utf-8") as log:
+                log.write(f"{fname} → CrossRef DOI {found_doi} returned no data\n")
+    else:
+        with open("mismatch.log", "a", encoding="utf-8") as log:
+            log.write(f"{fname} → CrossRef lookup for “{cleaned}” found no DOI\n")
+
+    # STEP 3: Last‐resort title+author query (only if no DOI found)
+    if not entry.get("doi"):
+        threshold = 85
+        print(f">>> [{fname}] Last‐resort title+author query on “{cleaned}”")
+        async with sem:
+            await asyncio.sleep(1.0)
+            try:
+                details = await client.query(
+                    title=cleaned,
+                    authors=entry.get("authors", []),
+                    fields=[
+                        "title", "authors", "year", "doi", "citation_count",
+                        "reference_count", "is_open_access", "pdf_url",
+                        "fields_of_study", "crossref_subjects", "publisher",
+                        "container_title", "bibtex_source", "source_quality",
+                    ],
+                )
+            except Exception as e:
+                print(f"    ❌ Error in title+author query: {e}")
+                details = None
+
+        if details:
+            md = details.model_dump()
+            ret_title = (md.get("title") or "").lower()
+            sim = fuzz.partial_ratio(cleaned.lower(), ret_title)
+            if sim >= threshold:
+                md.pop("other", None)
                 for k, v in md.items():
                     if v is not None:
                         entry[k] = v
-                return entry
+                return make_json_safe(entry)
+            else:
+                with open("mismatch.log", "a", encoding="utf-8") as log:
+                    log.write(f"{fname} → title+author fuzzy match too low ({sim} < {threshold})\n")
+        else:
+            with open("mismatch.log", "a", encoding="utf-8") as log:
+                log.write(f"{fname} → title+author query returned no data\n")
 
-    # 5e) If API gave nothing useful, fallback to direct CrossRef /works/{doi}, if we now have a DOI
-    doi = entry.get("doi")
-    if doi:
-        cr = crossref_lookup_by_doi(doi)
-        if cr:
-            entry["title"] = cr["title"]
-            entry["authors"] = cr["authors"]
-            entry["year"] = cr["year"]
-            if not entry.get("journal"):
-                entry["journal"] = cr.get("container_title")
-            return entry
-
-    # 5f) Still nothing → log it and move on
+    # STEP 4: Give up and return Zotero‐only fields
     with open("mismatch.log", "a", encoding="utf-8") as log:
-        log.write(f"{fname} → No reliable metadata found via API.\n")
-    return entry
+        log.write(f"{fname} → No reliable metadata found via arXiv/DOI/Title\n")
+
+    # If no pdf_url from API but Zotero has link attachments, use the first
+    if not entry.get("pdf_url") and entry.get("link_attachments"):
+        entry["pdf_url"] = entry["link_attachments"][0]
+
+    return make_json_safe(entry)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 6) The async driver: loop through all_meta keys and fill missing fields
+# 5) Async driver
 # ─────────────────────────────────────────────────────────────────────────────
 async def main():
     updated_count = 0
+
     for fname, entry in all_meta.items():
-        # Only attempt API if any of these core fields are still None
-        if (
-            entry.get("citation_count") is None
-            or entry.get("reference_count") is None
-            or entry.get("is_open_access") is None
-            or not entry.get("publisher")
-        ):
-            updated = await fill_with_api(fname, entry)
-            all_meta[fname] = updated
-            updated_count += 1
+        # Skip if already enriched (citation_count not None)
+        if entry.get("citation_count") is not None:
+            continue
 
-        # 6a) If no pdf_url from API, but Zotero’s link_attachments has something, use that
-        if not entry.get("pdf_url") and entry.get("link_attachments"):
-            entry["pdf_url"] = entry["link_attachments"][0]
+        print(f"⏳ Processing: {fname!r}")
+        new_entry = await fill_entry(fname, entry)
+        all_meta[fname] = new_entry
+        updated_count += 1
 
-    # 7) Write out the final, pruned JSON
+    # Write full JSON once, after sanitizing
+    safe_meta = make_json_safe(all_meta)
     with open("metadata_trimmed.json", "w", encoding="utf-8") as f:
-        json.dump(all_meta, f, indent=2)
+        json.dump(safe_meta, f, indent=2, ensure_ascii=False)
 
-    print(f"✅ Updated {updated_count} entries; wrote metadata_trimmed.json")
+    print(f"\n✅ Done! Updated {updated_count} entries → metadata_trimmed.json written")
 
 if __name__ == "__main__":
     asyncio.run(main())
