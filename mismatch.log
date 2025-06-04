@@ -1,0 +1,23 @@
+like_a_bilingual_baby_the_advantage_of_visually_grounding_a_bilingual_language_model → Title mismatch: guessed “like a bilingual baby: the advantage of visually grounding a bilingual language model” vs returned “bilingual investments of dual-language immersion program alumni” (score 50.79365079365079)
+few_shot_learning_with_multilingual_language_models → No reliable metadata found via API.
+learning_not_to_discriminate_task_agnostic_learning_for_improving_monolingual_and_code_switched_speech_recognition → Title mismatch: guessed “learning not to discriminate: task agnostic learning for improving monolingual and code-switched speech recognition” vs returned “speech-to-text and text-to-speech recognition using deep learning” (score 52.27272727272727)
+speechstew_simply_mix_all_available_speech_recognition_data_to_train_one_large_neural_network → Title mismatch: guessed “speechstew: simply mix all available speech recognition data to train one large neural network” vs returned “listen, attend and spell: a neural network for large vocabulary conversational speech recognition” (score 45.58823529411765)
+fasa_a_flexible_and_automatic_speech_aligner_for_extracting_high_quality_aligned_children_speech_data → Title mismatch: guessed “fasa: a flexible and automatic speech aligner for extracting high-quality aligned children speech data” vs returned “automatic screening for children with speech disorder using automatic speech recognition: opportunities and challenges” (score 50.90909090909091)
+evaluating_and_improving_child_directed_automatic_speech_recognition → Year mismatch: guessed 2020 vs returned 1997
+robust_speech_recognition_via_large_scale_weak_supervision → Year mismatch: guessed 2023 vs returned 1982
+lpc_augment_an_lpc_based_asr_data_augmentation_algorithm_for_low_and_zero_resource_children_s_dialects → No reliable metadata found via API.
+collecting_and_annotating_natural_child_speech_data_challenges_and_interdisciplinary_perspectives → Title mismatch: guessed “collecting and annotating natural child speech data – challenges and interdisciplinary perspectives” vs returned “technological and methodological challenges in creating, annotating and sharing a learner corpus of spoken german” (score 47.27272727272728)
+cross_lingual_and_multilingual_automatic_speech_recognition_for_scandinavian_languages → Title mismatch: guessed “cross-lingual and multilingual automatic speech recognition for scandinavian languages” vs returned “a speech recognition enabled ambulance call report system for paramedics” (score 52.542372881355924)
+book_reviews_statistical_methods_for_speech_recognition → No reliable metadata found via API.
+a_systematic_review_on_language_identification_of_code_mixed_text_techniques_data_availability_challenges_and_framework_development → Year mismatch: guessed 2022 vs returned 2024
+bilingual_language_acquisition → Year mismatch: guessed 2017 vs returned 2019
+design_and_development_a_childrens_speech_database → Title mismatch: guessed “design and development a children’s speech database” vs returned “160. urban speech (czech) / stadtsprache (tschechisch)” (score 37.64705882352941)
+learning_robust_and_multilingual_speech_representations → No reliable metadata found via API.
+understanding_multilingual_language_models_training_representation_and_architecture → Title mismatch: guessed “understanding multilingual language models: training, representation and architecture” vs returned “updated segment anything model (sam) architecture&amp;nbsp;&amp;nbsp;” (score 51.02040816326531)
+massively_multilingual_text_translation_for_low_resource_languages → Year mismatch: guessed 2024 vs returned 2018
+multilingual_distilwhisper_efficient_distillation_of_multi_task_speech_models_via_language_specific_experts → No reliable metadata found via API.
+data_augmentation_for_children_s_speech_recognition_the_ethiopian_system_for_the_slt_2021_children_speech_recognition_challenge → No reliable metadata found via API.
+pdf_towards_inclusive_automatic_speech_recognition → Year mismatch: guessed 2021 vs returned 2024
+improving_on_the_limitations_of_the_asr_model_in_low_resourced_environments_using_parameter_efficient_fine_tuning → Title mismatch: guessed “improving on the limitations of the asr model in low-resourced environments using parameter-efficient fine-tuning” vs returned “exploiting multilingualism through multistage fine-tuning for low-resource neural machine translation” (score 48.61878453038674)
+cross_language_transfer_learning_continuous_learning_and_domain_adaptation_for_end_to_end_automatic_speech_recognition → No reliable metadata found via API.
+reducing_bias_in_state_of_the_art_asr_systems_for_child_speech → No reliable metadata found via API.

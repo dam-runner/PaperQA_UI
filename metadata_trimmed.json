@@ -1,0 +1,117 @@
+{
+  "like_a_bilingual_baby_the_advantage_of_visually_grounding_a_bilingual_language_model": {
+    "title": "Bilingual investments of dual-language immersion program alumni",
+    "authors": [
+      "Madina Djuraeva",
+      "Diep Nguyen",
+      "Mariana Castro"
+    ],
+    "doi": "10.1080/13670050.2022.2039095",
+    "url": "http://arxiv.org/abs/2210.05487",
+    "journal": "International Journal of Bilingual Education and Bilingualism",
+    "year": 2022,
+    "genre": "preprint",
+    "link_attachments": [
+      "https://arxiv.org/pdf/2210.05487.pdf",
+      "https://arxiv.org/abs/2210.05487"
+    ],
+    "manual_tags": [],
+    "automatic_tags": [
+      "Computer Science - Computation and Language"
+    ],
+    "pages": null,
+    "issue": null,
+    "volume": null,
+    "publisher": "arXiv",
+    "abstract": "Unlike most neural language models, humans learn language in a rich, multi-sensory and, often, multi-lingual environment. Current language models typically fail to fully capture the complexities of multilingual language use. We train an LSTM language model on images and captions in English and Spanish from MS-COCO-ES. We find that the visual grounding improves the model's understanding of semantic similarity both within and across languages and improves perplexity. However, we find no significant advantage of visual grounding for abstract words. Our results provide additional evidence of the advantages of visually grounded language models and point to the need for more naturalistic language data from multilingual speakers and multilingual datasets with perceptual grounding.",
+    "publication_date": null,
+    "citation_count": null,
+    "reference_count": null,
+    "is_open_access": null,
+    "pdf_url": "https://arxiv.org/pdf/2210.05487.pdf",
+    "container_title": null,
+    "fields_of_study": null,
+    "crossref_subjects": null,
+    "subject": null,
+    "bibtex_source": [],
+    "source_quality": null
+  },
+  "few_shot_learning_with_multilingual_language_models": {
+    "title": "Few-shot Learning with Multilingual Language Models",
+    "authors": [
+      "Lin, Xi Victoria",
+      "Mihaylov, Todor",
+      "Artetxe, Mikel",
+      "Wang, Tianlu",
+      "Chen, Shuohui",
+      "Simig, Daniel",
+      "Ott, Myle",
+      "Goyal, Naman",
+      "Bhosale, Shruti",
+      "Du, Jingfei",
+      "Pasunuru, Ramakanth",
+      "Shleifer, Sam",
+      "Koura, Punit Singh",
+      "Chaudhary, Vishrav",
+      "O'Horo, Brian",
+      "Wang, Jeff",
+      "Zettlemoyer, Luke",
+      "Kozareva, Zornitsa",
+      "Diab, Mona",
+      "Stoyanov, Veselin",
+      "Li, Xian"
+    ],
+    "doi": "10.48550/arXiv.2112.10668",
+    "url": "http://arxiv.org/abs/2112.10668",
+    "journal": null,
+    "year": 2022,
+    "genre": "preprint",
+    "link_attachments": [
+      "https://arxiv.org/pdf/2112.10668.pdf",
+      "https://arxiv.org/abs/2112.10668"
+    ],
+    "manual_tags": [],
+    "automatic_tags": [
+      "Computer Science - Artificial Intelligence",
+      "Computer Science - Computation and Language"
+    ],
+    "pages": null,
+    "issue": null,
+    "volume": null,
+    "publisher": "arXiv",
+    "abstract": "Large-scale generative language models such as GPT-3 are competitive few-shot learners. While these models are known to be able to jointly represent many different languages, their training data is dominated by English, potentially limiting their cross-lingual generalization. In this work, we train multilingual generative language models on a corpus covering a diverse set of languages, and study their few- and zero-shot learning capabilities in a wide range of tasks. Our largest model with 7.5 billion parameters sets new state of the art in few-shot learning in more than 20 representative languages, outperforming GPT-3 of comparable size in multilingual commonsense reasoning (with +7.4% absolute accuracy improvement in 0-shot settings and +9.4% in 4-shot settings) and natural language inference (+5.4% in each of 0-shot and 4-shot settings). On the FLORES-101 machine translation benchmark, our model outperforms GPT-3 on 171 out of 182 directions with 32 training examples, while surpassing the official supervised baseline in 45 directions. We conduct an in-depth analysis of different multilingual prompting approaches, showing in particular that strong few-shot learning performance across languages can be achieved via cross-lingual transfer through both templates and demonstration examples. Finally, we evaluate our models in social value tasks such as hate speech detection in five languages and find it has limitations similar to comparable sized GPT-3 models.",
+    "publication_date": null,
+    "citation_count": null,
+    "reference_count": null,
+    "is_open_access": null,
+    "pdf_url": "https://arxiv.org/pdf/2112.10668.pdf",
+    "container_title": null,
+    "fields_of_study": null,
+    "crossref_subjects": null,
+    "subject": null,
+    "bibtex_source": [],
+    "source_quality": null
+  },
+  "mole_mixture_of_language_experts_for_multi_lingual_automatic_speech_recognition": {
+    "title": "MoLE : Mixture Of Language Experts For Multi-Lingual Automatic Speech Recognition",
+    "authors": [
+      "Yoohwan Kwon",
+      "Soo-Whan Chung"
+    ],
+    "doi": "10.48550/arxiv.2302.13750",
+    "url": "https://ieeexplore.ieee.org/document/10096227/",
+    "journal": "ICASSP 2023 - 2023 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)",
+    "year": 2023,
+    "genre": "journalArticle",
+    "link_attachments": [
+      "https://www.semanticscholar.org/paper/MoLE-%3A-Mixture-Of-Language-Experts-For-Automatic-Kwon-Chung/250373008e4441678006a6ba7dbb186449c7169f",
+      "https://arxiv.org/pdf/2302.13750"
+    ],
+    "manual_tags": [],
+    "automatic_tags": [],
+    "pages": "1-5",
+    "issue": null,
+    "volume": null,
+    "publisher": "IEEE",
+    "abstract": "Multi-lingual speech recognition aims to distinguish linguistic expressions in different languages and integrate acoustic processing simultaneously. In contrast, current multilingual speech recognition research follows a language-aware paradigm, mainly targeted to improve recognition performance rather than discriminate language characteristics. In this paper, we present a multi-lingual speech recognition network named Mixture-of-Language-Experts (MoLE), which digests speech in a variety of languages. Specifically, MoLE analyzes linguistic expression from input speech in arbitrary languages, activating a language-specific expert with a lightweight language gating network. The gating network not only activates experts, but also estimates the reliability of the activation. Based on the reliability, the activated expert and the language-agnostic expert are aggregated to represent language-conditioned embedding for efficient speech recognition. Our proposed model is evaluated in 5 languages scenario, and the experimental results show that our structure is advantageous on multi-lingual recognition, especially for speech in low-resource language.",
+    "publication_date": 
