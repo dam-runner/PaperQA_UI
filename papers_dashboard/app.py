@@ -5,11 +5,23 @@ import pandas as pd
 import sqlite3
 import json
 import matplotlib.pyplot as plt
+import sys
+import re
 
 # ——————————————————————————————————————————
 # 1) Database connection & global variables
 # ——————————————————————————————————————————
 DB_PATH = "asr_papers.db"
+
+# Config Settings
+st.set_page_config(
+    page_title="Child/Multilingual ASR Dashboard",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+# Troubleshooting
+#st.sidebar.write("Interpreter:", sys.executable)
 
 @st.cache_resource
 def get_connection():
@@ -175,32 +187,40 @@ if choice == "Overview":
     st.caption(f"⚠️ {missing_year_count} of {total_papers} papers have an unknown year.")
 
     # 4.2) Citation Count Distribution
-    df_cite = pd.read_sql("SELECT citation_count FROM papers;", conn)
-    missing_cite = df_cite["citation_count"].isna().sum()
-    valid_cite = df_cite["citation_count"].dropna().astype(int)
+    bins = [0, 10, 50, 100, 500, 1000, float("inf")]
+    labels = ["1–10", "11–50", "51–100", "101–500", "501–1000", ">1000"]
+    df_cite = pd.read_sql("SELECT citation_count FROM papers WHERE citation_count IS NOT NULL;", conn)
+    df_cite["bucket"] = pd.cut(df_cite["citation_count"], bins=bins, labels=labels, right=True)
+    counts = df_cite["bucket"].value_counts().reindex(labels, fill_value=0)
+    fig, ax = plt.subplots()
+    ax.bar(counts.index, counts.values)
+    ax.set_xlabel("Citation Count Range")
+    ax.set_ylabel("Number of Papers")
+    ax.set_xticklabels(counts.index, rotation=45, ha="right")
+    st.pyplot(fig)
+    st.caption(f"⚠️ {df_cite['citation_count'].isna().sum()} papers missing citation_count.")
 
-    st.subheader("Citation Count Distribution")
-    cite_counts = valid_cite.value_counts().sort_index()
-    fig_cite, ax_cite = plt.subplots()
-    ax_cite.bar(cite_counts.index.astype(str), cite_counts.values)
-    ax_cite.set_xlabel("Citation Count")
-    ax_cite.set_ylabel("# of Papers")
-    ax_cite.set_xticks(range(len(cite_counts)))
-    ax_cite.set_xticklabels(cite_counts.index.astype(str), rotation=45, ha="right")
-    st.pyplot(fig_cite)
-    st.caption(f"⚠️ {missing_cite} of {total_papers} papers have unknown citation counts.")
 
     # 4.3) Papers per Author (Top 10)
     df_auth = pd.read_sql("SELECT authors FROM papers;", conn)
+
+    # Replace any blank or any mention of “none” with None
+    df_auth["authors_clean"] = (
+        df_auth["authors"]
+        .astype(str)
+        .apply(lambda a: None if (not a.strip()) or ("none" in a.lower()) else a)
+        .apply(lambda a: None if ("unknown" in a.lower()) else a)
+    )
+
+    # Count missing
+    missing_authors = df_auth["authors_clean"].isna().sum()
+
+    # Flatten into one list of author names
     all_authors = []
-    for a in df_auth["authors"]:
-        if a and a.strip():
-            for name in a.split(";"):
-                name_clean = name.strip()
-                if name_clean:
-                    all_authors.append(name_clean)
-        else:
-            all_authors.append("Unknown")
+    for a in df_auth["authors_clean"].dropna():
+        all_authors += [name.strip() for name in a.split(";") if name.strip()]
+
+    # Compute frequencies and take top 10
     author_counts = pd.Series(all_authors).value_counts()
     top_authors = author_counts.head(10)
 
@@ -210,9 +230,13 @@ if choice == "Overview":
     ax_auth.invert_yaxis()
     ax_auth.set_xlabel("Number of Papers")
     ax_auth.set_ylabel("Author")
+    ax_auth.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{int(x)}')) # Set labels to ints
     st.pyplot(fig_auth)
-    st.caption(f"Top 10 authors out of {total_papers} papers.")
 
+    st.caption(f"Top 10 authors out of {total_papers} papers.")
+    st.caption(f"⚠️ {missing_authors} papers have unknown authors.")
+
+    
     # 4.4) Papers by Genre
     df_genre_raw = pd.read_sql("SELECT genre FROM papers;", conn)
     normalized_genres = df_genre_raw["genre"].apply(lambda g: normalize_genre(g))
@@ -232,23 +256,15 @@ if choice == "Overview":
     st.caption(f"⚠️ {missing_genre} of {total_papers} papers have unknown genre.")
 
     # 4.5) Papers by Journal (Top 10)
-    df_j_raw = pd.read_sql("SELECT journal FROM papers;", conn)
-    normalized_j = df_j_raw["journal"].apply(lambda j: normalize_journal(j))
-    journal_counts = normalized_j.value_counts().head(10)
-    missing_journal = (df_j_raw["journal"].isna() | (df_j_raw["journal"].str.strip() == "")).sum()
-
-    st.subheader("Papers by Journal (Top 10)")
-    fig_j, ax_j = plt.subplots()
-    ax_j.pie(
-        journal_counts.values,
-        labels=journal_counts.index,
-        autopct="%1.1f%%",
-        startangle=90
-    )
-    ax_j.axis("equal")
-    st.pyplot(fig_j)
-    st.caption(f"⚠️ {missing_journal} of {total_papers} papers have unknown or rare journals.")
-
+    df_j = pd.read_sql("SELECT journal FROM papers;", conn)
+    norm_j = df_j["journal"].apply(normalize_journal)
+    missing_j = (df_j["journal"].isna() | (df_j["journal"].str.strip() == "")).sum()
+    counts = norm_j[norm_j!="Unknown"].value_counts().head(10)
+    fig, ax = plt.subplots()
+    ax.pie(counts.values, labels=counts.index, autopct="%1.1f%%", startangle=90)
+    ax.axis("equal")
+    st.pyplot(fig)
+    st.caption(f"⚠️ {missing_j} papers have unknown journal.")
 
 
 # ========================================================
@@ -268,10 +284,21 @@ elif choice == "Charts":
 
     # (2) Citation Count
     st.subheader("Citation Count Distribution")
+
+    # Load the raw citation_count column
     df_cite = pd.read_sql("SELECT citation_count FROM papers;", conn)
+    
+    # Compute how many are missing
     missing_cite = df_cite["citation_count"].isna().sum()
+
+    # Cast to int for the valid ones
     valid_cite = df_cite["citation_count"].dropna().astype(int)
-    counts_cite = valid_cite.value_counts().sort_index()
+
+    # Binned citation counts:
+    bins = [0,10,50,100,500,1000,float("inf")]
+    labels = ["1–10","11–50","51–100","101–500","501–1000",">1000"]
+    df_cite["bucket"] = pd.cut(valid_cite, bins=bins, labels=labels, right=True)
+    counts_cite = df_cite["bucket"].value_counts().reindex(labels, fill_value=0)
     fig_cite2, ax_cite2 = plt.subplots()
     ax_cite2.bar(counts_cite.index.astype(str), counts_cite.values)
     ax_cite2.set_xlabel("Citation Count")
@@ -283,24 +310,37 @@ elif choice == "Charts":
 
     # (3) Papers per Author (Top 10)
     st.subheader("Papers per Author (Top 10)")
+
     df_auth = pd.read_sql("SELECT authors FROM papers;", conn)
+
+    # Normalize any “none none” or blank to None
+    df_auth["authors_clean"] = df_auth["authors"].apply(
+        lambda a: a if isinstance(a, str) and a.strip() and a.lower() != "none none" else None
+    )
+
+    # Count missing
+    missing_authors = df_auth["authors_clean"].isna().sum()
+
+    # Flatten into one list of author names
     all_authors = []
-    for a in df_auth["authors"]:
-        if a and a.strip():
-            for name in a.split(";"):
-                name_clean = name.strip()
-                if name_clean:
-                    all_authors.append(name_clean)
-        else:
-            all_authors.append("Unknown")
-    author_counts = pd.Series(all_authors).value_counts().head(10)
-    fig_auth2, ax_auth2 = plt.subplots()
-    ax_auth2.barh(author_counts.index, author_counts.values)
-    ax_auth2.invert_yaxis()
-    ax_auth2.set_xlabel("Number of Papers")
-    ax_auth2.set_ylabel("Author")
-    st.pyplot(fig_auth2)
-    st.caption("Top 10 authors by paper count.")
+    for a in df_auth["authors_clean"].dropna():
+        all_authors += [name.strip() for name in a.split(";") if name.strip()]
+
+    # Compute frequencies and take top 10
+    author_counts = pd.Series(all_authors).value_counts()
+    top_authors = author_counts.head(10)
+
+    st.subheader("Number of Papers per Author (Top 10)")
+    fig_auth, ax_auth = plt.subplots()
+    ax_auth.barh(top_authors.index, top_authors.values)
+    ax_auth.invert_yaxis()
+    ax_auth.set_xlabel("Number of Papers")
+    ax_auth.set_ylabel("Author")
+    st.pyplot(fig_auth)
+
+    st.caption(f"Top 10 authors out of {total_papers} papers.")
+    st.caption(f"⚠️ {missing_authors} papers have unknown authors.")
+
 
     # (4) Papers by Genre
     st.subheader("Papers by Genre")
@@ -337,7 +377,10 @@ elif choice == "Paper List":
     # — Sidebar Filters —
     st.sidebar.header("Filter Papers")
 
-    # (1) Year filter — slider
+    # (1) Keyword search in abstract
+    search_kw = st.sidebar.text_input("Search abstracts for keyword")
+
+    # (2) Year filter — slider
     year_min = int(pd.read_sql("SELECT MIN(year) AS min_y FROM papers;", conn)["min_y"].iloc[0] or 2015)
     year_max = int(pd.read_sql("SELECT MAX(year) AS max_y FROM papers;", conn)["max_y"].iloc[0] or 2025)
     selected_years = st.sidebar.slider(
@@ -347,7 +390,7 @@ elif choice == "Paper List":
         value=(year_min, year_max)
     )
 
-    # (2) Genre filter — multi-select
+    # (3) Genre filter — multi-select
     raw_genres = pd.read_sql("SELECT DISTINCT genre FROM papers;", conn)["genre"].fillna("").tolist()
     norm_genres = sorted({normalize_genre(g) for g in raw_genres})
     selected_genres = st.sidebar.multiselect(
@@ -356,7 +399,7 @@ elif choice == "Paper List":
         default=norm_genres
     )
 
-    # (3) Journal filter — multi-select
+    # (4) Journal filter — multi-select
     raw_journals = pd.read_sql("SELECT DISTINCT journal FROM papers;", conn)["journal"].fillna("").tolist()
     norm_journals = sorted({normalize_journal(j) for j in raw_journals})
     selected_journals = st.sidebar.multiselect(
@@ -365,13 +408,13 @@ elif choice == "Paper List":
         default=norm_journals
     )
 
-    # (4) Keyword search in abstract
-    search_kw = st.sidebar.text_input("Search abstracts for keyword")
-
     # — Build SQL WHERE clause for years only —
     query = "SELECT * FROM papers WHERE year BETWEEN ? AND ?"
     params = [selected_years[0], selected_years[1]]
     df_all = pd.read_sql(query, conn, params=params)
+
+    # force citation_count to an integer (and turn any NaNs into 0 or “Unknown” later)
+    df_all["citation_count"] = df_all["citation_count"].fillna(0).astype(int)
 
     # — Apply normalization & Python-level filters —
     df_all["genre_norm"] = df_all["genre"].apply(lambda g: normalize_genre(g))
@@ -417,6 +460,7 @@ elif choice == "Paper List":
         "link_attachments"
     ]
     df_display = df_all[display_cols].copy()
+    df_display.index = df_display.index + 1
     df_display.rename(columns={
         "title": "Title",
         "genre_norm": "Genre",
@@ -439,7 +483,19 @@ elif choice == "Paper List":
 
     st.write(f"🔍 Found {len(df_display)} papers matching the selected filters:")
     st.write("**Click “Link” or “PDF” to open the paper if available.**")
-    st.dataframe(df_display, use_container_width=True)
+
+    # Convert it to HTML without escaping HTML tags
+    html = df_display.to_html(escape=False, index=False)
+
+    # Replace Markdown links [Text](URL) → <a href="URL" target="_blank">Text</a>
+    html = re.sub(
+        r'\[([^\]]+)\]\((http[^\)]+)\)',
+        r'<a href="\2" target="_blank">\1</a>',
+        html
+    )
+
+    # Render as HTML in Streamlit
+    st.markdown(html, unsafe_allow_html=True)
 
     matched = len(df_display)
     caption_msg = f"{matched} of {total_papers} papers match your criteria."
