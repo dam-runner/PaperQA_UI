@@ -1,12 +1,12 @@
 # === In papers_dashboard/app.py ===
 
 import streamlit as st
+from streamlit.components.v1 import html
 import pandas as pd
 import sqlite3
 import json
 import matplotlib.pyplot as plt
-import sys
-import re
+from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
 
 # ——————————————————————————————————————————
 # 1) Database connection & global variables
@@ -202,42 +202,110 @@ if choice == "Overview":
 
 
     # 4.3) Papers per Author (Top 10)
+
     df_auth = pd.read_sql("SELECT authors FROM papers;", conn)
 
-    # Replace any blank or any mention of “none” with None
-    df_auth["authors_clean"] = (
-        df_auth["authors"]
-        .astype(str)
-        .apply(lambda a: None if (not a.strip()) or ("none" in a.lower()) else a)
-        .apply(lambda a: None if ("unknown" in a.lower()) else a)
+    def clean_author(a):
+        if not a or not str(a).strip():
+            return None
+        s = str(a).strip()
+        sl = s.lower()
+        if "none" in sl or "unknown" in sl:
+            return None
+        return s
+
+    # apply cleaning
+    df_auth["authors_clean"] = df_auth["authors"].apply(clean_author)
+
+    # count how many got dropped
+    missing = df_auth["authors_clean"].isna().sum()
+    total   = len(df_auth)
+
+    # build a flat list of all author names (one entry per paper-author pair)
+    all_authors = []
+    for auth in df_auth["authors_clean"].dropna():
+        for name in auth.split(";"):
+            name = name.strip()
+            if name:
+                all_authors.append(name)
+
+    # count and take top 10
+    author_counts = pd.Series(all_authors).value_counts().head(10)
+
+    # plot
+    st.subheader("Number of Papers per Author (Top 10)")
+    fig, ax = plt.subplots()
+    ax.barh(author_counts.index, author_counts.values)
+    ax.invert_yaxis()
+    ax.set_xlabel("Number of Papers")
+    ax.set_ylabel("Author")
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"{int(x)}"))
+    st.pyplot(fig)
+
+    st.caption(f"Excluded {missing} of {total} papers with unknown authors.")
+
+    # 4.4) Citation counts per author
+
+    df_auth = pd.read_sql("SELECT authors, citation_count FROM papers;", conn)
+
+    # ensure citation_count is integer
+    df_auth["citation_count"] = (
+        df_auth["citation_count"]
+        .fillna(0)
+        .astype(int)
     )
 
-    # Count missing
+    # safe author-cleaning function
+    def clean_author(a):
+        # treat None, empty, whitespace-only as missing
+        if not a or not str(a).strip():
+            return None
+        s = str(a).strip()
+        s_lower = s.lower()
+        # drop any that mention “none” or “unknown”
+        if "none" in s_lower or "unknown" in s_lower:
+            return None
+        return s
+
+    # apply cleaning
+    df_auth["authors_clean"] = df_auth["authors"].apply(clean_author)
+
+    # count how many rows became missing
     missing_authors = df_auth["authors_clean"].isna().sum()
+    total_papers    = df_auth.shape[0]
 
-    # Flatten into one list of author names
-    all_authors = []
-    for a in df_auth["authors_clean"].dropna():
-        all_authors += [name.strip() for name in a.split(";") if name.strip()]
+    # build a list of (author, citations) pairs
+    author_cits = []
+    for _, row in df_auth.dropna(subset=["authors_clean"]).iterrows():
+        for name in row["authors_clean"].split(";"):
+            name = name.strip()
+            if name:
+                author_cits.append((name, row["citation_count"]))
 
-    # Compute frequencies and take top 10
-    author_counts = pd.Series(all_authors).value_counts()
-    top_authors = author_counts.head(10)
+    # turn into DataFrame and sum citations per author
+    df_ac = pd.DataFrame(author_cits, columns=["author","citations"])
+    top_authors = (
+        df_ac
+        .groupby("author")["citations"]
+        .sum()
+        .sort_values(ascending=False)
+        .head(10)
+    )
 
-    st.subheader("Number of Papers per Author (Top 10)")
-    fig_auth, ax_auth = plt.subplots()
-    ax_auth.barh(top_authors.index, top_authors.values)
-    ax_auth.invert_yaxis()
-    ax_auth.set_xlabel("Number of Papers")
-    ax_auth.set_ylabel("Author")
-    ax_auth.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{int(x)}')) # Set labels to ints
-    st.pyplot(fig_auth)
+    # plot
+    st.subheader("Top 10 Authors by Total Citation Count")
+    fig, ax = plt.subplots()
+    ax.barh(top_authors.index, top_authors.values)
+    ax.invert_yaxis()
+    ax.set_xlabel("Total Citations")
+    ax.set_ylabel("Author")
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"{int(x)}"))
+    st.pyplot(fig)
 
-    st.caption(f"Top 10 authors out of {total_papers} papers.")
-    st.caption(f"⚠️ {missing_authors} papers have unknown authors.")
+    st.caption(f"Excludes {missing_authors} out of {total_papers} papers with unknown authors.")
 
-    
-    # 4.4) Papers by Genre
+
+    # 4.5) Papers by Genre
     df_genre_raw = pd.read_sql("SELECT genre FROM papers;", conn)
     normalized_genres = df_genre_raw["genre"].apply(lambda g: normalize_genre(g))
     genre_counts = normalized_genres.value_counts()
@@ -255,7 +323,7 @@ if choice == "Overview":
     st.pyplot(fig_genre)
     st.caption(f"⚠️ {missing_genre} of {total_papers} papers have unknown genre.")
 
-    # 4.5) Papers by Journal (Top 10)
+    # 4.6) Papers by Journal (Top 10)
     df_j = pd.read_sql("SELECT journal FROM papers;", conn)
     norm_j = df_j["journal"].apply(normalize_journal)
     missing_j = (df_j["journal"].isna() | (df_j["journal"].str.strip() == "")).sum()
@@ -374,134 +442,186 @@ elif choice == "Charts":
 elif choice == "Paper List":
     st.title("Paper List (Filter & Search)")
 
-    # — Sidebar Filters —
+    # ─── Sidebar Filters ──────────────────────────────────────────
     st.sidebar.header("Filter Papers")
+    search_kw = st.sidebar.text_input("Search abstracts for keyword").strip()
 
-    # (1) Keyword search in abstract
-    search_kw = st.sidebar.text_input("Search abstracts for keyword")
-
-    # (2) Year filter — slider
     year_min = int(pd.read_sql("SELECT MIN(year) AS min_y FROM papers;", conn)["min_y"].iloc[0] or 2015)
     year_max = int(pd.read_sql("SELECT MAX(year) AS max_y FROM papers;", conn)["max_y"].iloc[0] or 2025)
     selected_years = st.sidebar.slider(
         "Publication Year Range",
-        min_value=year_min,
-        max_value=year_max,
+        min_value=year_min, max_value=year_max,
         value=(year_min, year_max)
     )
 
-    # (3) Genre filter — multi-select
-    raw_genres = pd.read_sql("SELECT DISTINCT genre FROM papers;", conn)["genre"].fillna("").tolist()
-    norm_genres = sorted({normalize_genre(g) for g in raw_genres})
-    selected_genres = st.sidebar.multiselect(
-        "Genre",
-        options=norm_genres,
-        default=norm_genres
-    )
+    raw_genres   = pd.read_sql("SELECT DISTINCT genre FROM papers;", conn)["genre"].fillna("").tolist()
+    norm_genres  = sorted({normalize_genre(g) for g in raw_genres})
+    selected_genres = st.sidebar.multiselect("Genre", options=norm_genres, default=norm_genres)
 
-    # (4) Journal filter — multi-select
     raw_journals = pd.read_sql("SELECT DISTINCT journal FROM papers;", conn)["journal"].fillna("").tolist()
-    norm_journals = sorted({normalize_journal(j) for j in raw_journals})
+    norm_journals= sorted({normalize_journal(j) for j in raw_journals})
     selected_journals = st.sidebar.multiselect(
         "Journal (Top 20 by frequency)",
         options=norm_journals,
         default=norm_journals
     )
 
-    # — Build SQL WHERE clause for years only —
-    query = "SELECT * FROM papers WHERE year BETWEEN ? AND ?"
-    params = [selected_years[0], selected_years[1]]
-    df_all = pd.read_sql(query, conn, params=params)
-
-    # force citation_count to an integer (and turn any NaNs into 0 or “Unknown” later)
+    # ─── Load & Filter Data ───────────────────────────────────────
+    df_all = pd.read_sql(
+        "SELECT * FROM papers WHERE year BETWEEN ? AND ?",
+        conn, params=selected_years
+    )
     df_all["citation_count"] = df_all["citation_count"].fillna(0).astype(int)
+    df_all["genre_norm"]   = df_all["genre"].apply(normalize_genre)
+    df_all["journal_norm"] = df_all["journal"].apply(normalize_journal)
 
-    # — Apply normalization & Python-level filters —
-    df_all["genre_norm"] = df_all["genre"].apply(lambda g: normalize_genre(g))
-    df_all["journal_norm"] = df_all["journal"].apply(lambda j: normalize_journal(j))
-
-    # Filter by genre
-    if selected_genres and set(selected_genres) != set(norm_genres):
+    if set(selected_genres) != set(norm_genres):
         df_all = df_all[df_all["genre_norm"].isin(selected_genres)]
-
-    # Filter by journal
-    if selected_journals and set(selected_journals) != set(norm_journals):
+    if set(selected_journals) != set(norm_journals):
         df_all = df_all[df_all["journal_norm"].isin(selected_journals)]
+    if search_kw:
+        df_all = df_all[df_all["abstract"]
+            .fillna("")
+            .str.lower()
+            .str.contains(search_kw.lower())
+        ]
 
-    # Filter by abstract keyword
-    if search_kw and search_kw.strip():
-        kw = search_kw.strip().lower()
-        df_all = df_all[df_all["abstract"].fillna("").str.lower().str.contains(kw)]
-
-    # — Prepare the DataFrame for display —
-    def format_attachments(la):
-        if not la or la.strip() == "" or la.strip() == "[]":
-            return "Unknown"
-        try:
-            arr = json.loads(la)
-        except:
-            return "Unknown"
-        links = []
-        for u in arr:
-            if u and u.startswith("http"):
-                links.append(f"[PDF]({u})")
-        return ", ".join(links) if links else "Unknown"
-
-    def make_clickable(url):
-        if url and url.strip().startswith("http"):
-            return f"[Link]({url})"
-        return "Unknown"
-
-    # Choose the columns to display, in the order you want
-    display_cols = [
-        "title", "genre_norm", "authors", "year", "url",
-        "publisher", "journal_norm", "doi", "abstract",
-        "doi_url", "formatted_citation", "citation_count",
-        "link_attachments"
-    ]
-    df_display = df_all[display_cols].copy()
-    df_display.index = df_display.index + 1
-    df_display.rename(columns={
+    # ─── Build & Prepare Display DataFrame ───────────────────────
+    rename_dict = {
         "title": "Title",
         "genre_norm": "Genre",
         "authors": "Authors",
         "year": "Year",
-        "url": "URL",
+        "url": "Link",
         "publisher": "Publisher",
         "journal_norm": "Journal",
         "doi": "DOI",
         "abstract": "Abstract",
         "doi_url": "DOI_URL",
         "formatted_citation": "Citation",
-        "citation_count": "Citation_Count",
-        "link_attachments": "Link_Attachments"
-    }, inplace=True)
+        "citation_count": "Citations",
+        "link_attachments": "PDF"
+    }
+    display_cols = list(rename_dict.keys())
 
-    df_display = df_display.fillna("Unknown")
-    df_display["URL"] = df_display["URL"].apply(make_clickable)
-    df_display["Link_Attachments"] = df_display["Link_Attachments"].apply(format_attachments)
-
-    st.write(f"🔍 Found {len(df_display)} papers matching the selected filters:")
-    st.write("**Click “Link” or “PDF” to open the paper if available.**")
-
-    # Convert it to HTML without escaping HTML tags
-    html = df_display.to_html(escape=False, index=False)
-
-    # Replace Markdown links [Text](URL) → <a href="URL" target="_blank">Text</a>
-    html = re.sub(
-        r'\[([^\]]+)\]\((http[^\)]+)\)',
-        r'<a href="\2" target="_blank">\1</a>',
-        html
+    df = (
+        df_all[display_cols]
+        .rename(columns=rename_dict)
+        .fillna("")  # ensure no NaNs
     )
 
-    # Render as HTML in Streamlit
-    st.markdown(html, unsafe_allow_html=True)
+    # — inject real <a> links for URL and PDF columns —
+    df["Link"] = df["Link"].apply(
+        lambda u: f'<a href="{u}" target="_blank">🔗</a>' if u.startswith("http") else ""
+    )
 
-    matched = len(df_display)
-    caption_msg = f"{matched} of {total_papers} papers match your criteria."
-    if search_kw:
-        excluded = (df_all.shape[0] - matched)
-        caption_msg += f" ({excluded} excluded because they had no match in the abstract.)"
-    st.caption(caption_msg)
+    def make_pdfs(cell):
+        try:
+            arr = json.loads(cell)
+            return " ".join(f'<a href="{u}" target="_blank">PDF</a>' for u in arr if u.startswith("http"))
+        except:
+            return ""
+    df["PDF"] = df["PDF"].apply(make_pdfs)
+
+    # — collapse abstracts with <details> summary —
+    def wrap_abstract(txt, n=120):
+        if not txt or len(txt) <= n:
+            return txt or ""
+        summary = txt[:n].rsplit(" ", 1)[0] + "…"
+        return f"<details><summary>{summary}</summary><p>{txt}</p></details>"
+    df["Abstract"] = df["Abstract"].apply(wrap_abstract)
+
+    st.write(f"🔍 Found {len(df)} of {len(df_all)} papers matching the filters.")
+
+    # Generate the HTML table with the 'compact' class:
+    html_table = df.to_html(
+        index=False,
+        escape=False,
+        table_id="papers",
+        classes="display stripe hover compact"
+    )
+
+    # —— Dark-mode overrides & SearchPanes styling ——
+    css = """
+    <style>
+    /* Overall wrapper background transparent, text light */
+    .dataTables_wrapper {
+      background: transparent !important;
+      color: #eee !important;
+      font-size: 0.9em;
+    }
+
+    /* Table cells in dark gray with light text */
+    table.dataTable, table.dataTable th, table.dataTable td {
+      background-color: #222 !important;
+      color: #eee !important;
+      border-color: #444 !important;
+    }
+
+    /* Header a bit darker */
+    table.dataTable th {
+      background-color: #333 !important;
+    }
+
+    /* Shrink padding */
+    table.dataTable th, table.dataTable td {
+      padding: 4px 6px !important;
+    }
+
+    /* Compact table class: even tighter */
+    table.compact th, table.compact td {
+      padding: 2px 4px !important;
+    }
+
+    /* Limit SearchPanes height & scroll */
+    .dtsp-searchPanes {
+      max-height: 150px;
+      overflow-y: auto;
+      background: #1a1a1a;
+      border: 1px solid #444;
+    }
+
+    /* details summary color */
+    details summary {
+      color: #7af !important;
+      cursor: pointer;
+    }
+    </style>
+    """
+
+    # Full HTML embed: CSS + DataTables + SearchPanes + table + init script
+    html_string = f"""
+    {css}
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"/>
+    <link rel="stylesheet" href="https://cdn.datatables.net/searchpanes/2.1.2/css/searchPanes.dataTables.min.css"/>
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/1.6.1/css/select.dataTables.min.css"/>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/searchpanes/2.1.2/js/dataTables.searchPanes.min.js"></script>
+    <script src="https://cdn.datatables.net/select/1.6.1/js/dataTables.select.min.js"></script>
+
+    {html_table}
+
+    <script>
+    $(document).ready(function() {{
+    $('#papers').DataTable({{
+        pageLength: 25,
+        lengthMenu: [[25,50,100,-1],[25,50,100,'All']],
+        dom: 'Plfrtip',            // P=SearchPanes, l=length, f=filter, r=info, t=table, p=paging
+        searchPanes: {{ cascadePanes: true }},
+        columnDefs: [
+        {{ searchPanes: {{ show: true }}, targets: [1,2,6] }},
+        {{ targets: [1,2,6], searchable: true }}
+        ]
+    }});
+    }});
+    </script>
+    """
+        
+    csv = df_all.to_csv(index=False)
+    st.download_button("Download current view as CSV", csv, "papers.csv")
+
+    st.components.v1.html(html_string, height=700, scrolling=True)
 
 
