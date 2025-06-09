@@ -456,171 +456,177 @@ elif choice == "Paper List":
 
     raw_genres   = pd.read_sql("SELECT DISTINCT genre FROM papers;", conn)["genre"].fillna("").tolist()
     norm_genres  = sorted({normalize_genre(g) for g in raw_genres})
-    selected_genres = st.sidebar.multiselect("Genre", options=norm_genres, default=norm_genres)
+    sel_genres   = st.sidebar.multiselect("Genre", options=norm_genres, default=norm_genres)
 
     raw_journals = pd.read_sql("SELECT DISTINCT journal FROM papers;", conn)["journal"].fillna("").tolist()
     norm_journals= sorted({normalize_journal(j) for j in raw_journals})
-    selected_journals = st.sidebar.multiselect(
-        "Journal (Top 20 by frequency)",
-        options=norm_journals,
-        default=norm_journals
-    )
+    sel_journals = st.sidebar.multiselect("Journal", options=norm_journals, default=norm_journals)
 
-    # ─── Load & Filter Data ───────────────────────────────────────
+    raw_pubs     = pd.read_sql("SELECT DISTINCT publisher FROM papers;", conn)["publisher"].fillna("").tolist()
+    norm_pubs    = sorted(set(raw_pubs))
+    sel_pubs     = st.sidebar.multiselect("Publisher", options=norm_pubs, default=norm_pubs)
+
+    # ─── Load & Filter Data ─────────────────────────────────────
     df_all = pd.read_sql(
-        "SELECT * FROM papers WHERE year BETWEEN ? AND ?",
-        conn, params=selected_years
+        "SELECT * FROM papers WHERE year BETWEEN ? AND ?", conn, params=selected_years
     )
     df_all["citation_count"] = df_all["citation_count"].fillna(0).astype(int)
     df_all["genre_norm"]   = df_all["genre"].apply(normalize_genre)
     df_all["journal_norm"] = df_all["journal"].apply(normalize_journal)
 
-    if set(selected_genres) != set(norm_genres):
-        df_all = df_all[df_all["genre_norm"].isin(selected_genres)]
-    if set(selected_journals) != set(norm_journals):
-        df_all = df_all[df_all["journal_norm"].isin(selected_journals)]
+    if set(sel_genres) != set(norm_genres):
+        df_all = df_all[df_all["genre_norm"].isin(sel_genres)]
+    if set(sel_journals) != set(norm_journals):
+        df_all = df_all[df_all["journal_norm"].isin(sel_journals)]
+    if set(sel_pubs) != set(norm_pubs):
+        df_all = df_all[df_all["publisher"].isin(sel_pubs)]
     if search_kw:
         df_all = df_all[df_all["abstract"]
-            .fillna("")
-            .str.lower()
-            .str.contains(search_kw.lower())
-        ]
+                        .fillna("")
+                        .str.lower()
+                        .str.contains(search_kw.lower())]
 
-    # ─── Build & Prepare Display DataFrame ───────────────────────
-    rename_dict = {
-        "title": "Title",
-        "genre_norm": "Genre",
-        "authors": "Authors",
-        "year": "Year",
-        "url": "Link",
-        "publisher": "Publisher",
-        "journal_norm": "Journal",
-        "doi": "DOI",
-        "abstract": "Abstract",
-        "doi_url": "DOI_URL",
-        "formatted_citation": "Citation",
-        "citation_count": "Citations",
-        "link_attachments": "PDF"
+    # ─── Prepare Display DataFrame ─────────────────────────────
+    rename_map = {
+        "title":             "Title",
+        "genre_norm":        "Genre",
+        "authors":           "Authors",
+        "year":              "Year",
+        "publisher":         "Publisher",
+        "journal_norm":      "Journal",
+        "formatted_citation":"Citation",
+        "citation_count":    "Citations",
+        "url":               "Link",
+        "link_attachments":  "PDF",
+        "abstract":          "Abstract",
     }
-    display_cols = list(rename_dict.keys())
-
+    cols = list(rename_map.keys())
     df = (
-        df_all[display_cols]
-        .rename(columns=rename_dict)
-        .fillna("")  # ensure no NaNs
+      df_all[cols]
+      .rename(columns=rename_map)
+      .fillna("")
     )
 
-    # — inject real <a> links for URL and PDF columns —
+    # — clickable 🔗 and PDF anchors
     df["Link"] = df["Link"].apply(
-        lambda u: f'<a href="{u}" target="_blank">🔗</a>' if u.startswith("http") else ""
+      lambda u: f'<a href="{u}" target="_blank">🔗</a>' if u.startswith("http") else ""
     )
-
     def make_pdfs(cell):
-        try:
-            arr = json.loads(cell)
-            return " ".join(f'<a href="{u}" target="_blank">PDF</a>' for u in arr if u.startswith("http"))
-        except:
-            return ""
+      try:
+        arr = json.loads(cell)
+        return " ".join(f'<a href="{u}" target="_blank">PDF</a>' for u in arr if u.startswith("http"))
+      except:
+        return ""
     df["PDF"] = df["PDF"].apply(make_pdfs)
 
-    # — collapse abstracts with <details> summary —
-    def wrap_abstract(txt, n=120):
-        if not txt or len(txt) <= n:
-            return txt or ""
-        summary = txt[:n].rsplit(" ", 1)[0] + "…"
-        return f"<details><summary>{summary}</summary><p>{txt}</p></details>"
+    # — wrap abstracts in <details>, hover shows full text
+    def wrap_abstract(txt, n=100):
+      if not isinstance(txt, str) or len(txt) <= n:
+        return txt or ""
+      summary = txt[:n].rsplit(" ",1)[0] + "…"
+      esc = txt.replace('"', '&quot;')
+      return (
+        f'<details title="{esc}">'
+        f'  <summary>{summary}</summary>'
+        f'  <div style="padding:4px 0;">{txt}</div>'
+        f'</details>'
+      )
     df["Abstract"] = df["Abstract"].apply(wrap_abstract)
 
     st.write(f"🔍 Found {len(df)} of {len(df_all)} papers matching the filters.")
+    csv = df_all.to_csv(index=False)
+    st.download_button("Download current view as CSV", csv, "papers.csv")
 
-    # Generate the HTML table with the 'compact' class:
+    # ─── Convert to HTML & DataTables embed ──────────────────────
     html_table = df.to_html(
-        index=False,
-        escape=False,
-        table_id="papers",
-        classes="display stripe hover compact"
+      index=False,
+      escape=False,
+      table_id="papers",
+      classes="display stripe hover compact"
     )
 
-    # —— Dark-mode overrides & SearchPanes styling ——
+    # — CSS to tame dark mode, fix sizes, show sort icons
     css = """
     <style>
-    /* Overall wrapper background transparent, text light */
-    .dataTables_wrapper {
-      background: transparent !important;
-      color: #eee !important;
-      font-size: 0.9em;
+    table.dataTable {
+    color: #eee;
+    background: #1c1c1e;
+    border: 1px solid #444;
+    table-layout: fixed;
     }
-
-    /* Table cells in dark gray with light text */
-    table.dataTable, table.dataTable th, table.dataTable td {
-      background-color: #222 !important;
-      color: #eee !important;
-      border-color: #444 !important;
-    }
-
-    /* Header a bit darker */
-    table.dataTable th {
-      background-color: #333 !important;
-    }
-
-    /* Shrink padding */
     table.dataTable th, table.dataTable td {
-      padding: 4px 6px !important;
+    padding: 8px 10px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     }
-
-    /* Compact table class: even tighter */
+    table.dataTable th {
+    background: #2c2c2e !important;
+    }
+    table.dataTable th.sorting:after,
+    table.dataTable th.sorting_asc:after,
+    table.dataTable th.sorting_desc:after {
+    color: #999;
+    }
+    table.dataTable tr {
+    height: 48px;
+    }
     table.compact th, table.compact td {
-      padding: 2px 4px !important;
-    }
-
-    /* Limit SearchPanes height & scroll */
-    .dtsp-searchPanes {
-      max-height: 150px;
-      overflow-y: auto;
-      background: #1a1a1a;
-      border: 1px solid #444;
-    }
-
-    /* details summary color */
-    details summary {
-      color: #7af !important;
-      cursor: pointer;
+    padding: 4px 6px !important;
     }
     </style>
     """
 
-    # Full HTML embed: CSS + DataTables + SearchPanes + table + init script
     html_string = f"""
-    {css}
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"/>
-    <link rel="stylesheet" href="https://cdn.datatables.net/searchpanes/2.1.2/css/searchPanes.dataTables.min.css"/>
-    <link rel="stylesheet" href="https://cdn.datatables.net/select/1.6.1/css/select.dataTables.min.css"/>
+    <style>
+    /* dark mode & fixed layout */
+    table.dataTable {{
+    color: #eee;
+    background: #1c1c1e;
+    border: 1px solid #444;
+    table-layout: fixed;
+    }}
+    table.dataTable th, table.dataTable td {{
+    padding: 8px 10px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    }}
+    table.dataTable th {{ background: #2c2c2e !important }}
+    table.dataTable tr {{ height: 48px }}
+    </style>
+
+    <link 
+    rel="stylesheet" 
+    href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"/>
+    <link 
+    rel="stylesheet" 
+    href="https://cdn.datatables.net/searchbuilder/1.4.2/css/searchBuilder.dataTables.min.css"/>
 
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/searchpanes/2.1.2/js/dataTables.searchPanes.min.js"></script>
-    <script src="https://cdn.datatables.net/select/1.6.1/js/dataTables.select.min.js"></script>
+    <script 
+    src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script 
+    src="https://cdn.datatables.net/searchbuilder/1.4.2/js/dataTables.searchBuilder.min.js"></script>
 
     {html_table}
 
     <script>
     $(document).ready(function() {{
     $('#papers').DataTable({{
+        ordering: true,
         pageLength: 25,
         lengthMenu: [[25,50,100,-1],[25,50,100,'All']],
-        dom: 'Plfrtip',            // P=SearchPanes, l=length, f=filter, r=info, t=table, p=paging
-        searchPanes: {{ cascadePanes: true }},
-        columnDefs: [
-        {{ searchPanes: {{ show: true }}, targets: [1,2,6] }},
-        {{ targets: [1,2,6], searchable: true }}
-        ]
+        autoWidth: false,
+        scrollX: true,
+        dom: 'QBfrtip',            // Q = SearchBuilder
+        searchBuilder: {{
+        columns: [1,2,4,5]       // apply filter UI to Genre, Authors, Publisher, Journal
+        }}
     }});
     }});
     </script>
     """
-        
-    csv = df_all.to_csv(index=False)
-    st.download_button("Download current view as CSV", csv, "papers.csv")
 
     st.components.v1.html(html_string, height=700, scrolling=True)
 
